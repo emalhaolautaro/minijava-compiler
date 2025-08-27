@@ -1,6 +1,6 @@
-package main.com.minijava.compiler;
+package main.com.minijava.compiler.utils;
 
-public class TokenImpl implements Token{
+public class TokenImpl implements Token {
     private String tipo;
     private String lexema;
     private int linea;
@@ -24,5 +24,13 @@ public class TokenImpl implements Token{
     @Override
     public int obtenerLinea() {
         return linea;
+    }
+
+    public String toString() {
+        return "Token{" +
+                "tipo='" + tipo + '\'' +
+                ", lexema='" + lexema + '\'' +
+                ", linea=" + linea +
+                '}';
     }
 }

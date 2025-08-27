@@ -1,7 +1,7 @@
 package main.com.minijava.compiler.lexical;
 
-import main.com.minijava.compiler.Token;
-import main.com.minijava.compiler.TokenImpl;
+import main.com.minijava.compiler.utils.Token;
+import main.com.minijava.compiler.utils.TokenImpl;
 import main.com.minijava.compiler.errorhandling.exceptions.LexicalException;
 import main.com.minijava.compiler.errorhandling.messages.LexicalErrorMessages;
 import main.com.minijava.compiler.filemanager.SourceManager;
@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import static java.lang.Character.*;
 import static main.com.minijava.compiler.filemanager.SourceManager.END_OF_FILE;
+import static main.com.minijava.compiler.utils.PalabraReservada.esPalabraReservada;
+import static main.com.minijava.compiler.utils.PalabraReservada.obtenerTipo;
 
 public class AnalizadorLexicoImpl implements AnalizadorLexico{
     String lexema = "";
@@ -18,13 +20,14 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
 
     private static final int MAX_LONG_INT = 9;
 
-    public AnalizadorLexicoImpl(SourceManager gestorFuente) throws IOException {
+    public AnalizadorLexicoImpl(SourceManager gestorFuente) {
         this.gestorFuente = gestorFuente;
         actualizarCaracterActual();
     }
 
     @Override
     public Token proximoToken() {
+        limpiarLexema();
         return e0();
     }
 
@@ -32,7 +35,7 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
         try {
             caracterActual = gestorFuente.getNextChar();
         }catch (IOException e){
-            System.out.println(e.getMessage());
+            throw new RuntimeException("Error al abrir el archivo fuente");
         }
     }
 
@@ -86,7 +89,6 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
                     caracterActual == '.'
         ){
             actualizarLexema();
-            actualizarCaracterActual();
             return puntuacion();
         }
         else if (caracterActual == '>' ||
@@ -199,6 +201,175 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
         }
     }
 
+    private Token puntuacion() {
+        String tipo;
+        switch (lexema) {
+            case "(": tipo = "ParentesisIzq"; break;
+            case ")": tipo = "ParentesisDer"; break;
+            case "{": tipo = "LlaveIzq"; break;
+            case "}": tipo = "LlaveDer"; break;
+            case ";": tipo = "PuntoYComa"; break;
+            case ",": tipo = "Coma"; break;
+            case ":": tipo = "DosPuntos"; break;
+            case ".": tipo = "Punto"; break;
+            default:
+                throw new IllegalStateException("Error interno del compilador: Puntuacion desconocida '" + lexema + "'");
+        }
+
+        actualizarCaracterActual();
+        return new TokenImpl(tipo, lexema, gestorFuente.getLineNumber());
+    }
+
+    private Token comentarioBloque() {
+        if(caracterActual == '*') {
+            actualizarLexema();
+            actualizarCaracterActual();
+            return posibleCierreComentarioBloque();
+        }else{
+            if(caracterActual != END_OF_FILE){
+                actualizarLexema();
+                actualizarCaracterActual();
+                return comentarioBloque();
+            }else{
+                throw new LexicalException(LexicalErrorMessages.ERR_UNEXPECTED_EOF(lexema, gestorFuente));
+            }
+        }
+    }
+
+    private Token posibleCierreComentarioBloque() {
+        if(caracterActual == '/'){
+            limpiarLexema();
+            actualizarCaracterActual();
+            return e0();
+        }else if(caracterActual == END_OF_FILE){
+            throw new LexicalException(LexicalErrorMessages.ERR_UNEXPECTED_EOF(lexema, gestorFuente));
+        }else{
+            actualizarLexema();
+            actualizarCaracterActual();
+            return comentarioBloque();
+        }
+    }
+
+    private Token comentarioLinea() {
+        if(caracterActual != '\n' && caracterActual != END_OF_FILE){
+            actualizarLexema();
+            actualizarCaracterActual();
+            return comentarioLinea();
+        }else{
+            limpiarLexema();
+            actualizarCaracterActual();
+            return e0();
+        }
+    }
+
+    private Token stringLiteral() {
+        if (caracterActual == '\\'){
+            actualizarLexema();
+            actualizarCaracterActual();
+            return barraInvertidaString();
+        }else if(caracterActual == '"'){
+            actualizarLexema();
+            actualizarCaracterActual();
+            return stringCierre();
+        }else if(caracterActual == END_OF_FILE){
+            throw new LexicalException(LexicalErrorMessages.ERR_UNEXPECTED_EOF(lexema, gestorFuente));
+        }else if(caracterActual == '\n'){
+            throw new LexicalException(LexicalErrorMessages.ERR_UNEXPECTED_ENTER(lexema, gestorFuente));
+        } else {
+            actualizarLexema();
+            actualizarCaracterActual();
+            return stringLiteral();
+        }
+    }
+
+    private Token stringCierre() {
+        return new TokenImpl("stringLiteral", lexema, gestorFuente.getLineNumber());
+    }
+
+    private Token barraInvertidaString() {
+        if(caracterActual != END_OF_FILE){
+            actualizarLexema();
+            actualizarCaracterActual();
+            return stringLiteral();
+        }else{
+            throw new LexicalException(LexicalErrorMessages.ERR_UNEXPECTED_EOF(lexema, gestorFuente));
+        }
+    }
+
+    private Token charLiteral() {
+        if(caracterActual == '\\'){
+            actualizarLexema();
+            actualizarCaracterActual();
+            return barraInvertidaChar();
+        }else{
+            actualizarLexema();
+            actualizarCaracterActual();
+            return espacioLetraDigitoSimboloChar();
+        }
+    }
+
+    private Token espacioLetraDigitoSimboloChar() {
+        if(caracterActual == '\'') {
+            actualizarLexema();
+            actualizarCaracterActual();
+            return charCierre();
+        }else{
+            actualizarLexema();
+            actualizarCaracterActual();
+            throw new LexicalException(LexicalErrorMessages.ERR_BAD_CLOSED_CHAR(lexema, gestorFuente));
+        }
+    }
+
+    private Token charCierre() {
+        return new TokenImpl("charLiteral", lexema, gestorFuente.getLineNumber());
+    }
+
+    private Token barraInvertidaChar() {
+        if(caracterActual == '\''){
+            actualizarLexema();
+            actualizarCaracterActual();
+            return comillaSimpleChar();
+        }else{
+            actualizarLexema();
+            actualizarCaracterActual();
+            return espacioLetraDigitoSimboloChar();
+        }
+    }
+
+    private Token comillaSimpleChar() {
+        if(caracterActual == '\''){
+            actualizarLexema();
+            actualizarCaracterActual();
+            return charCierre();
+        }else{
+            actualizarLexema();
+            actualizarCaracterActual();
+            throw new LexicalException(LexicalErrorMessages.ERR_BAD_CLOSED_CHAR(lexema, gestorFuente));
+        }
+    }
+
+    private Token idMetVar() {
+        if (isLetterOrDigit(caracterActual) || caracterActual == '_') {
+            actualizarLexema();
+            actualizarCaracterActual();
+            return idMetVar();
+        } else if(esPalabraReservada(lexema)){
+            return new TokenImpl(obtenerTipo(lexema), lexema, gestorFuente.getLineNumber());
+        } else {
+            return new TokenImpl("idMetVar", lexema, gestorFuente.getLineNumber());
+        }
+    }
+
+    private Token idClase() {
+        if (isLetterOrDigit(caracterActual) || caracterActual == '_') {
+            actualizarLexema();
+            actualizarCaracterActual();
+            return idClase();
+        } else {
+            return new TokenImpl("idClase", lexema, gestorFuente.getLineNumber());
+        }
+    }
+
     private Token intLiteral() {
         if (isDigit(caracterActual)) {
             if (lexema.length() < MAX_LONG_INT) {
@@ -206,6 +377,7 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
                 actualizarCaracterActual();
                 return intLiteral();
             } else {
+                actualizarCaracterActual();
                 throw new LexicalException(LexicalErrorMessages.ERR_LONG_INT(lexema, gestorFuente));
             }
         }else{

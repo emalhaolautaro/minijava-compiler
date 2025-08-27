@@ -15,6 +15,16 @@ public class LexicalErrorMessages {
         return mensaje;
     }
 
+    public static String ERR_BAD_CLOSED_CHAR(String lexema, SourceManager gestorFuente) {
+        return errorGenerico(gestorFuente) + " El literal char " + lexema + " no está correctamente cerrado." + '\n' +
+                reporteDeErrorElegante(lexema, gestorFuente);
+    }
+
+    public static String ERR_RESERVED_WORD(String lexema, SourceManager gestorFuente) {
+        return errorGenerico(gestorFuente) + " La palabra " + lexema + " es una palabra reservada y no puede ser utilizada como identificador." + '\n' +
+                reporteDeErrorElegante(lexema, gestorFuente);
+    }
+
     private static String errorGenerico(SourceManager sourceManager) {
         return "Error Léxico en linea " + sourceManager.getLineNumber() + ":";
     }
@@ -31,5 +41,13 @@ public class LexicalErrorMessages {
         return reporte.toString();
     }
 
+    public static String ERR_UNEXPECTED_EOF(String lexema, SourceManager gestorFuente) {
+        return errorGenerico(gestorFuente) + " Se encontró el fin del archivo inesperadamente. Posible causa: " + lexema + " no está cerrado correctamente." + '\n' +
+                reporteDeErrorElegante(lexema, gestorFuente);
+    }
 
+    public static String ERR_UNEXPECTED_ENTER(String lexema, SourceManager gestorFuente) {
+        return errorGenerico(gestorFuente) + " Se encontró un salto de línea inesperado. Posible causa: " + lexema + " no está cerrado correctamente." + '\n' +
+                reporteDeErrorElegante(lexema, gestorFuente);
+    }
 }

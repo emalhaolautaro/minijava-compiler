@@ -1,4 +1,4 @@
-package main.com.minijava.compiler;
+package main.com.minijava.compiler.utils;
 
 public interface Token {
     public String obtenerTipo();
