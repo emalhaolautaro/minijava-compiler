@@ -48,7 +48,8 @@ public class Main {
             } while (token != null && !token.obtenerTipo().equals("EOF"));
             System.out.println(consoleMessage.getSuccessMessage());
         } catch (LexicalException e) {
-            System.out.println(e.getMessage());
+            consoleMessage.setErrorMessage(e.getMessage());
+            System.out.println(consoleMessage.getErrorMessage());
         }
     }
 
@@ -60,20 +61,6 @@ public class Main {
                 token = analizadorLexico.proximoToken();
                 consoleMessage.setSuccessMessage(token.toString());
                 consoleMessage.setErrorMessage(e.getMessage());java
-                private static void ejecutarAnalizadorLexico() {
-                    Token token = null;
-                    ConsoleMessages consoleMessage = new ConsoleMessages();
-                    try {
-                        do {
-                            token = analizadorLexico.proximoToken();
-                            consoleMessage.setSuccessMessage(token.toString());
-                        } while (token != null && !token.obtenerTipo().equals("EOF"));
-                        System.out.println(consoleMessage.getSuccessMessage());
-                    } catch (LexicalException e) {
-                        System.out.println(e.getMessage());
-                    }
-                }
-            }
         }while (token != null && !token.obtenerTipo().equals("EOF"));
         System.out.println(consoleMessage.getSuccessMessage());
         System.out.println(consoleMessage.getErrorMessage());

@@ -15,8 +15,8 @@ public class LexicalErrorMessages {
         return mensaje;
     }
 
-    public static String ERR_BAD_CLOSED_CHAR(String lexema, SourceManager gestorFuente) {
-        return errorGenerico(gestorFuente) + " El literal char " + lexema + " no está correctamente cerrado." + '\n' +
+    public static String ERR_CLOSED_OR_TOO_LONG_CHAR(String lexema, SourceManager gestorFuente) {
+        return errorGenerico(gestorFuente) + " El literal char " + lexema + " no está correctamente cerrado o es muy largo." + '\n' +
                 reporteDeErrorElegante(lexema, gestorFuente);
     }
 
@@ -48,6 +48,11 @@ public class LexicalErrorMessages {
 
     public static String ERR_UNEXPECTED_ENTER(String lexema, SourceManager gestorFuente) {
         return errorGenerico(gestorFuente) + " Se encontró un salto de línea inesperado. Posible causa: " + lexema + " no está cerrado correctamente." + '\n' +
+                reporteDeErrorElegante(lexema, gestorFuente);
+    }
+
+    public static String ERR_EMPTY_CHAR(String lexema, SourceManager gestorFuente) {
+        return errorGenerico(gestorFuente) + " El literal char " + lexema + " está vacío." + '\n' +
                 reporteDeErrorElegante(lexema, gestorFuente);
     }
 }

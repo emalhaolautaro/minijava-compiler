@@ -16,7 +16,12 @@ public class ConsoleMessages {
         successMessage = successMessage + exito + '\n';
     }
 
-    public String getErrorMessage() { return errorMessage; }
+    public String getErrorMessage() {
+        if (!errorMessage.isEmpty()) {
+            return errorMessage + "[ConErrores]\n";
+        }
+        return errorMessage;
+    }
     public String getSuccessMessage() {
         if (errorMessage.isEmpty()) {
             setSuccessMessage("\n" + "[SinErrores]");

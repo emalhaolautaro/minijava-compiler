@@ -301,7 +301,11 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
             actualizarLexema();
             actualizarCaracterActual();
             return barraInvertidaChar();
-        }else{
+        } else if (caracterActual == '\'') {
+            actualizarLexema();
+            actualizarCaracterActual();
+            throw new LexicalException(LexicalErrorMessages.ERR_EMPTY_CHAR(lexema, gestorFuente));
+        } else{
             actualizarLexema();
             actualizarCaracterActual();
             return espacioLetraDigitoSimboloChar();
@@ -316,36 +320,22 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
         }else{
             actualizarLexema();
             actualizarCaracterActual();
-            throw new LexicalException(LexicalErrorMessages.ERR_BAD_CLOSED_CHAR(lexema, gestorFuente));
+            throw new LexicalException(LexicalErrorMessages.ERR_CLOSED_OR_TOO_LONG_CHAR(lexema, gestorFuente));
         }
     }
 
-    private Token charCierre() {
-        return new TokenImpl("charLiteral", lexema, gestorFuente.getLineNumber());
-    }
-
     private Token barraInvertidaChar() {
-        if(caracterActual == '\''){
-            actualizarLexema();
-            actualizarCaracterActual();
-            return comillaSimpleChar();
-        }else{
+        if(caracterActual == END_OF_FILE){
+            throw new LexicalException(LexicalErrorMessages.ERR_UNEXPECTED_EOF(lexema, gestorFuente));
+        }else {
             actualizarLexema();
             actualizarCaracterActual();
             return espacioLetraDigitoSimboloChar();
         }
     }
 
-    private Token comillaSimpleChar() {
-        if(caracterActual == '\''){
-            actualizarLexema();
-            actualizarCaracterActual();
-            return charCierre();
-        }else{
-            actualizarLexema();
-            actualizarCaracterActual();
-            throw new LexicalException(LexicalErrorMessages.ERR_BAD_CLOSED_CHAR(lexema, gestorFuente));
-        }
+    private Token charCierre() {
+        return new TokenImpl("charLiteral", lexema, gestorFuente.getLineNumber());
     }
 
     private Token idMetVar() {
