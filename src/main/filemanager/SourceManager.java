@@ -1,4 +1,4 @@
-package main.com.minijava.compiler.filemanager;
+package main.filemanager;
 //Author: Juan Dingevan
 
 import java.io.FileNotFoundException;

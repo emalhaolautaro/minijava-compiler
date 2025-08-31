@@ -1,4 +1,4 @@
-package main.com.minijava.compiler.utils;
+package main.utils;
 
 public class TokenImpl implements Token {
     private String tipo;

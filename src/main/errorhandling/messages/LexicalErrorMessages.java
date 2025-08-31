@@ -1,6 +1,6 @@
-package main.com.minijava.compiler.errorhandling.messages;
+package main.errorhandling.messages;
 
-import main.com.minijava.compiler.filemanager.SourceManager;
+import main.filemanager.SourceManager;
 
 public class LexicalErrorMessages {
     public static String ERR_UNEXPECTED_CHAR (String unexpectedChar, SourceManager sourceManager) {
@@ -20,13 +20,8 @@ public class LexicalErrorMessages {
                 reporteDeErrorElegante(lexema, gestorFuente);
     }
 
-    public static String ERR_RESERVED_WORD(String lexema, SourceManager gestorFuente) {
-        return errorGenerico(gestorFuente) + " La palabra " + lexema + " es una palabra reservada y no puede ser utilizada como identificador." + '\n' +
-                reporteDeErrorElegante(lexema, gestorFuente);
-    }
-
     private static String errorGenerico(SourceManager sourceManager) {
-        return "Error Léxico en linea " + sourceManager.getLineNumber() + ":";
+        return "Error Léxico en linea " + sourceManager.getLineNumber() + ", columna " + sourceManager.getColumnNumber() + ":";
     }
 
     private static String reporteDeErrorElegante(String lexemaErroneo, SourceManager sourceManager) {
@@ -53,6 +48,16 @@ public class LexicalErrorMessages {
 
     public static String ERR_EMPTY_CHAR(String lexema, SourceManager gestorFuente) {
         return errorGenerico(gestorFuente) + " El literal char " + lexema + " está vacío." + '\n' +
+                reporteDeErrorElegante(lexema, gestorFuente);
+    }
+
+    public static String ERR_INCORRECT_OPERATOR(String lexema, SourceManager gestorFuente) {
+        return errorGenerico(gestorFuente) + " El operador " + lexema + " no es válido." + '\n' +
+                reporteDeErrorElegante(lexema, gestorFuente);
+    }
+
+    public static String ERR_MALFORMED_UNICODE_ESCAPE(String lexema, SourceManager gestorFuente) {
+        return errorGenerico(gestorFuente) + " La secuencia de escape Unicode " + lexema + " está mal formada. Se esperan 4 dígitos hexadecimales después de '\\u'." + '\n' +
                 reporteDeErrorElegante(lexema, gestorFuente);
     }
 }

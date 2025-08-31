@@ -1,4 +1,4 @@
-package main.com.minijava.compiler;
+package main;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class TesterDeCasosConErrores {
     
     //TODO: el tipo de esta variable init tiene que ser la clase que tiene el main
-    private static final Main init = new Main();
+    private static final Main init = null;
     
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
