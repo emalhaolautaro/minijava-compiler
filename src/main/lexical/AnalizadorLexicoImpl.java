@@ -198,8 +198,9 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
         }
         else {
             actualizarLexema();
+            int columnaError = gestorFuente.getColumnNumber();
             actualizarCaracterActual();
-            throw new LexicalException(LexicalErrorMessages.ERR_UNEXPECTED_CHAR(lexema, gestorFuente));
+            throw new LexicalException(LexicalErrorMessages.ERR_UNEXPECTED_CHAR(lexema, gestorFuente, columnaError));
         }
     }
 

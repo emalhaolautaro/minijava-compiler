@@ -3,10 +3,25 @@ package main.errorhandling.messages;
 import main.filemanager.SourceManager;
 
 public class LexicalErrorMessages {
-    public static String ERR_UNEXPECTED_CHAR (String unexpectedChar, SourceManager sourceManager) {
-        String mensaje = errorGenerico(sourceManager) + " " + unexpectedChar + " no es un símbolo valido." + '\n';
-        mensaje = mensaje + reporteDeErrorElegante(unexpectedChar, sourceManager);
+    public static String ERR_UNEXPECTED_CHAR (String unexpectedChar, SourceManager sourceManager, int columnaError) {
+        String mensaje = errorGenericoSimbolo(sourceManager, columnaError) + " " + unexpectedChar + " no es un símbolo valido." + '\n';
+        mensaje = mensaje + reporteDeErrorEleganteSimbolos(unexpectedChar, sourceManager, columnaError);
         return mensaje;
+    }
+
+    private static String reporteDeErrorEleganteSimbolos(String lexemaErroneo, SourceManager sourceManager, int columna) {
+        StringBuilder reporte = new StringBuilder("Detalle: ");
+        int fila = sourceManager.getLineNumber();
+
+        reporte.append(sourceManager.getCurrentLine()).append('\n');
+        reporte.append(" ".repeat(columna + "Detalle: ".length() - 1)).append("^\n");
+        reporte.append("[Error:").append(lexemaErroneo).append("|").append(fila).append("]\n");
+
+        return reporte.toString();
+    }
+
+    private static String errorGenericoSimbolo(SourceManager sourceManager, int columna) {
+        return "Error Léxico en linea " + sourceManager.getLineNumber() + ", columna " + columna + ":";
     }
 
     public static String ERR_LONG_INT(String lexema, SourceManager gestorFuente) {
