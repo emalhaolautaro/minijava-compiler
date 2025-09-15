@@ -8,5 +8,8 @@ class MiClase {
         var d = true;
         var e = false;
         var f = null;
+        if(a && b){
+            return a+b;
+        }
     }
 }
