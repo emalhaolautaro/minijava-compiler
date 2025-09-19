@@ -33,9 +33,22 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         if(primeros.incluidoEnPrimeros("Clase", tipo)){
             clase();
             listaClases();
-        }else{
+        }else if(tipo.equals("interface")){
+            interfaz();
+            listaClases();
+        }
+        else{
             //epsilon
         }
+    }
+
+    private void interfaz() {
+        match("interface");
+        match("idClase");
+        herenciaOpcional();
+        match("LlaveIzq");
+        listaMiembros();
+        match("LlaveDer");
     }
 
     private void clase() {
@@ -44,10 +57,31 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         modificadorOpcional();
         match("class");
         match("idClase");
-        herenciaOpcional();
+        herenciaOinterfazOpcional();
         match("LlaveIzq");
         listaMiembros();
         match("LlaveDer");
+    }
+
+    private void herenciaOinterfazOpcional() {
+        String tipo = tokenActual.obtenerTipo();
+        if(primeros.incluidoEnPrimeros("HerenciaOpcional", tipo)){
+            herenciaOpcional();
+        }else if (primeros.incluidoEnPrimeros("InterfazOpcional", tipo)){
+            interfazOpcional();
+        }else{
+            //epsilon
+        }
+    }
+
+    private void interfazOpcional() {
+        String tipo = tokenActual.obtenerTipo();
+        if(primeros.incluidoEnPrimeros("InterfazOpcional", tipo)){
+            match("implements");
+            match("idClase");
+        }else{
+            //epsilon
+        }
     }
 
     private void listaMiembros() {
