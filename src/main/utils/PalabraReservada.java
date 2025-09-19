@@ -9,6 +9,8 @@ public class PalabraReservada {
     static{
         palabrasReservadas.put("class", "class");
         palabrasReservadas.put("extends", "extends");
+        palabrasReservadas.put("interface", "interface");
+        palabrasReservadas.put("implements", "implements");
         palabrasReservadas.put("public", "public");
         palabrasReservadas.put("static", "static");
         palabrasReservadas.put("void", "void");
