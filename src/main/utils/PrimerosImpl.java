@@ -12,16 +12,14 @@ public class PrimerosImpl implements Primeros{
 
     static{
         // Reglas de alto nivel
-        primeros.put("Inicial",  new HashSet<>(Arrays.asList("abstract", "static", "final", "class", "interface", "EOF")));
-        primeros.put("ListaClases", new HashSet<>(Arrays.asList("abstract", "static", "final", "class", "interface"))); // Ahora es una lista de unidades
+        primeros.put("Inicial",  new HashSet<>(Arrays.asList("abstract", "static", "final", "class", "EOF")));
+        primeros.put("ListaClases", new HashSet<>(Arrays.asList("abstract", "static", "final", "class"))); // Ahora es una lista de unidades
         primeros.put("Clase", new HashSet<>(Arrays.asList("abstract", "static", "final", "class")));
 
         // Modificadores y Herencia
-        primeros.put("ModificadorOpcional", new HashSet<>(Arrays.asList("abstract", "static", "final")));
+        primeros.put("ModificadorOpcional", new HashSet<>(Arrays.asList("abstract", "static", "final", "class")));
         primeros.put("Modificador", new HashSet<>(Arrays.asList("abstract", "static", "final")));
         primeros.put("HerenciaOpcional", new HashSet<>(Arrays.asList("extends")));
-        primeros.put("InterfazOpcional", new HashSet<>(Arrays.asList("implements")));
-        primeros.put("HerenciaOInterfazOpcional", new HashSet<>(Arrays.asList("extends", "implements")));
 
         // Miembros de clase
         primeros.put("Miembro", new HashSet<>(Arrays.asList("boolean", "char", "int", "idClase", "abstract", "static", "final", "void", "public")));
