@@ -33,55 +33,19 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         if(primeros.incluidoEnPrimeros("Clase", tipo)){
             clase();
             listaClases();
-        }else if(tipo.equals("interface")){
-            interfaz();
-            listaClases();
-        }
-        else{
+        }else{
             //epsilon
         }
     }
 
-    private void interfaz() {
-        match("interface");
+    private void clase() {
+        modificadorOpcional();
+        match("class");
         match("idClase");
         herenciaOpcional();
         match("LlaveIzq");
         listaMiembros();
         match("LlaveDer");
-    }
-
-    private void clase() {
-        String tipo = tokenActual.obtenerTipo();
-
-        modificadorOpcional();
-        match("class");
-        match("idClase");
-        herenciaOinterfazOpcional();
-        match("LlaveIzq");
-        listaMiembros();
-        match("LlaveDer");
-    }
-
-    private void herenciaOinterfazOpcional() {
-        String tipo = tokenActual.obtenerTipo();
-        if(primeros.incluidoEnPrimeros("HerenciaOpcional", tipo)){
-            herenciaOpcional();
-        }else if (primeros.incluidoEnPrimeros("InterfazOpcional", tipo)){
-            interfazOpcional();
-        }else{
-            //epsilon
-        }
-    }
-
-    private void interfazOpcional() {
-        String tipo = tokenActual.obtenerTipo();
-        if(primeros.incluidoEnPrimeros("InterfazOpcional", tipo)){
-            match("implements");
-            match("idClase");
-        }else{
-            //epsilon
-        }
     }
 
     private void listaMiembros() {
@@ -572,13 +536,21 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
 
     private void puntoYComaOAtributoFormal() {
         String tipo = tokenActual.obtenerTipo();
-        if(tipo.equals("PuntoYComa")){
+        /* Ahora hay 3 posibilidades después de un 'idMetVar':
+        1. Un '=' para inicializar un atributo.
+        2. Un ';' para declarar un atributo sin inicializar.
+        3. Un '(' para declarar un método.*/
+        if (tipo.equals("Igual")) { // Atributo con inicialización
+            match("Igual");
+            expresion();
             match("PuntoYComa");
-        }else if(tipo.equals("ParentesisIzq")){
+        } else if(tipo.equals("PuntoYComa")){ // Atributo sin inicialización
+            match("PuntoYComa");
+        } else if(tipo.equals("ParentesisIzq")){ // Es un método
             argsFormales();
             bloqueOpcional();
         }else{
-            throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("';' o '('", tokenActual, sourceManager));
+            throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("';', '=' o '('", tokenActual, sourceManager));
         }
     }
 

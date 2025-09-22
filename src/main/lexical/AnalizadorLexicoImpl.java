@@ -163,7 +163,7 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
                 actualizarLexema();
                 actualizarCaracterActual();
                 return new TokenImpl(tipo + "Cortocircuito", lexema, gestorFuente.getLineNumber());
-            }else {
+            }  else {
                 throw new LexicalException(LexicalErrorMessages.ERR_INCORRECT_OPERATOR(lexema, gestorFuente));
             }
         }
@@ -185,11 +185,11 @@ public class AnalizadorLexicoImpl implements AnalizadorLexico{
                 actualizarLexema();
                 actualizarCaracterActual();
                 return comentarioLinea();
-            }else if(caracterActual == '*'){
+            } else if(caracterActual == '*'){
                 actualizarLexema();
                 actualizarCaracterActual();
                 return comentarioBloque();
-            }else{
+            } else{
                 return new TokenImpl("Dividir", lexema, gestorFuente.getLineNumber());
             }
         }
