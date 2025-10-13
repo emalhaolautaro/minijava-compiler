@@ -4,21 +4,25 @@ import main.errorhandling.exceptions.SyntacticException;
 import main.errorhandling.messages.SyntacticErrorMessages;
 import main.filemanager.SourceManager;
 import main.lexical.AnalizadorLexico;
+import main.semantic.symboltable.*;
 import main.utils.Primeros;
 import main.utils.PrimerosImpl;
 import main.utils.Token;
+import main.utils.TokenImpl;
 
 public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
 
-    Token tokenActual;
-    AnalizadorLexico aLex;
-    SourceManager sourceManager;
-    Primeros primeros;
+    private Token tokenActual;
+    private AnalizadorLexico aLex;
+    private SourceManager sourceManager;
+    private Primeros primeros;
+    private TablaSimbolos tablaSimbolos;
 
-    public AnalizadorSintacticoImpl(AnalizadorLexico aLex, SourceManager sourceManager){
+    public AnalizadorSintacticoImpl(AnalizadorLexico aLex, SourceManager sourceManager, TablaSimbolos ts){
         this.aLex = aLex;
         tokenActual = aLex.proximoToken();
         this.sourceManager = sourceManager;
+        this.tablaSimbolos = ts;
         primeros = new PrimerosImpl();
     }
 
@@ -39,10 +43,19 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
     }
 
     private void clase() {
-        modificadorOpcional();
+        Token modificador, nombre, padre;
+
+        modificador = modificadorOpcional();
         match("class");
+        nombre = tokenActual;
         match("idClase");
-        herenciaOpcional();
+        padre = herenciaOpcional();
+
+        Clase nuevaClase = new Clase(modificador, nombre, padre);
+        tablaSimbolos.agregarClase(nombre, nuevaClase);
+        tablaSimbolos.setClaseActual(nuevaClase);
+
+
         match("LlaveIzq");
         listaMiembros();
         match("LlaveDer");
@@ -71,9 +84,18 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
 
     private void constructor() {
         String tipo = tokenActual.obtenerTipo();
+        Token visibilidad, nombre;
+
         if(tipo.equals("public")){
+            visibilidad = tokenActual;
             match("public");
+            nombre = tokenActual;
             match("idClase");
+
+            Constructor cons =  new Constructor(nombre, visibilidad);
+            tablaSimbolos.obtenerClaseActual().agregarConstructor(cons);
+            tablaSimbolos.setUnidadActual(cons);
+
             argsFormales();
             bloque();
         }else{
@@ -83,19 +105,35 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
 
     private void metodoOAtributo() {
         String tipo = tokenActual.obtenerTipo();
+        Tipo tipoAM;
+        Token nombre, modificador;
         if(primeros.incluidoEnPrimeros("Tipo", tipo)){
-            tipo();
+            tipoAM = tipo();
+            nombre = tokenActual;
             match("idMetVar");
-            puntoYComaOAtributoFormal();
+            puntoYComaOAtributoFormal(tipoAM, nombre);
         }else if(primeros.incluidoEnPrimeros("Modificador", tipo)){
-            modificador();
-            tipoMetodo();
+            modificador = modificador();
+            tipoAM = tipoMetodo();
+            nombre = tokenActual;
             match("idMetVar");
+
+            Metodo nuevoMetodo = new Metodo(modificador, tipoAM, nombre);
+            tablaSimbolos.obtenerClaseActual().agregarMetodo(nuevoMetodo);
+            tablaSimbolos.setUnidadActual(nuevoMetodo);
+
             argsFormales();
             bloqueOpcional();
         }else if(tipo.equals("void")){
+            tipoAM = new Tipo(tokenActual);
             match("void");
+            nombre = tokenActual;
             match("idMetVar");
+
+            Metodo nuevoMetodo = new Metodo(null, tipoAM, nombre);
+            tablaSimbolos.obtenerClaseActual().agregarMetodo(nuevoMetodo);
+            tablaSimbolos.setUnidadActual(nuevoMetodo);
+
             argsFormales();
             bloqueOpcional();
         } else{
@@ -118,6 +156,9 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         String tipo = tokenActual.obtenerTipo();
         if(tipo.equals("LlaveIzq")){
             match("LlaveIzq");
+            if(tablaSimbolos.obtenerUnidadActual() instanceof Metodo){
+                ((Metodo) tablaSimbolos.obtenerUnidadActual()).setearCuerpo();
+            }
             listaSentencias();
             match("LlaveDer");
         }else{
@@ -503,50 +544,73 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
     private void argFormal() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("Tipo", tipo)){
-            tipo();
+            Tipo type = tipo();
+            Token nombre = tokenActual;
             match("idMetVar");
+
+            Parametro p = new Parametro(type, nombre);
+            tablaSimbolos.obtenerUnidadActual().agregarParametro(p);
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo", tokenActual, sourceManager));
         }
     }
 
-    private void tipoMetodo() {
+    private Tipo tipoMetodo() {
         String tipo = tokenActual.obtenerTipo();
+        Tipo type;
+
         if(primeros.incluidoEnPrimeros("Tipo", tipo)){
-            tipo();
+            type = tipo();
         }else if(tipo.equals("void")){
+            type = new Tipo(tokenActual);
             match("void");
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo o 'void'", tokenActual, sourceManager));
         }
+        return type;
     }
 
-    private void modificador() {
+    private Token modificador() {
         String tipo = tokenActual.obtenerTipo();
+        Token modificador;
         if(tipo.equals("abstract")){
+            modificador = tokenActual;
             match("abstract");
         } else if (tipo.equals("static")) {
+            modificador = tokenActual;
             match("static");
         } else if (tipo.equals("final")) {
+            modificador = tokenActual;
             match("final");
         } else {
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un modificador", tokenActual, sourceManager));
         }
+        return modificador;
     }
 
-    private void puntoYComaOAtributoFormal() {
+    private void puntoYComaOAtributoFormal(Tipo tipoAM, Token nombre) {
         String tipo = tokenActual.obtenerTipo();
         /* Ahora hay 3 posibilidades después de un 'idMetVar':
         1. Un '=' para inicializar un atributo.
         2. Un ';' para declarar un atributo sin inicializar.
         3. Un '(' para declarar un método.*/
         if (tipo.equals("Igual")) { // Atributo con inicialización
+            Atributo nuevoAtributo = new Atributo(nombre, tipoAM, null);
+            tablaSimbolos.obtenerClaseActual().agregarAtributo(nuevoAtributo, tablaSimbolos);
+
             match("Igual");
             expresion();
             match("PuntoYComa");
         } else if(tipo.equals("PuntoYComa")){ // Atributo sin inicialización
+            Atributo nuevoAtributo = new Atributo(nombre, tipoAM, null);
+            tablaSimbolos.obtenerClaseActual().agregarAtributo(nuevoAtributo, tablaSimbolos);
+
             match("PuntoYComa");
         } else if(tipo.equals("ParentesisIzq")){ // Es un método
+            Metodo nuevoMetodo = new Metodo(null, tipoAM, nombre);
+            tablaSimbolos.obtenerClaseActual().agregarMetodo(nuevoMetodo);
+            tablaSimbolos.setUnidadActual(nuevoMetodo);
+
             argsFormales();
             bloqueOpcional();
         }else{
@@ -554,51 +618,72 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         }
     }
 
-    private void tipo() {
+    private Tipo tipo() {
         String tipo = tokenActual.obtenerTipo();
+        Tipo type;
         if(primeros.incluidoEnPrimeros("TipoPrimitivo", tipo)){
-            tipoPrimitivo();
+            type = tipoPrimitivo();
         }else if(tipo.equals("idClase")){
+            type = new Tipo(tokenActual);
             match("idClase");
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo primitivo o un id de clase", tokenActual, sourceManager));
         }
+        return type;
     }
 
-    private void tipoPrimitivo() {
+    private Tipo tipoPrimitivo() {
         String tipo = tokenActual.obtenerTipo();
+        Tipo type;
         if(tipo.equals("boolean")){
+            type = new Tipo(tokenActual);
             match("boolean");
         } else if (tipo.equals("char")) {
+            type = new Tipo(tokenActual);
             match("char");
         } else if (tipo.equals("int")) {
+            type = new Tipo(tokenActual);
             match("int");
         } else {
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo primitivo", tokenActual, sourceManager));
         }
+        return type;
     }
 
-    private void herenciaOpcional() {
+    private Token herenciaOpcional() {
         String tipo = tokenActual.obtenerTipo();
+        Token retorno;
         if(primeros.incluidoEnPrimeros("HerenciaOpcional", tipo)){
             match("extends");
+            retorno = tokenActual;
             match("idClase");
         }else{
             //epsilon
+            retorno = new TokenImpl(null, "Object", -1);
         }
+
+        return retorno;
     }
 
-    private void modificadorOpcional() {
+    private Token modificadorOpcional() {
         String tipo = tokenActual.obtenerTipo();
+        Token retorno;
+
         if(tipo.equals("abstract")){
+            retorno = tokenActual;
             match("abstract");
         } else if (tipo.equals("static")) {
+            retorno = tokenActual;
             match("static");
         }else if (tipo.equals("final")){
+            retorno = tokenActual;
             match("final");
         }else{
             //epsilon
+            retorno = null;
         }
+
+        return retorno;
     }
 
     private void match(String nombreToken){

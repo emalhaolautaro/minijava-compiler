@@ -3,6 +3,7 @@ package main;
 import java.io.*;
 import java.util.ArrayList;
 
+import main.Main;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Test;
