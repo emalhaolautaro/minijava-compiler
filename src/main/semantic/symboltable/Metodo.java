@@ -2,6 +2,7 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
+import main.semantic.nodes.NodoBloque;
 import main.utils.Token;
 
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ public class Metodo extends Unidad {
     private Tipo tipoRetorno;
     private boolean tieneCuerpo = false;
     private boolean esPredefinido = false;
+    private Clase pertenece;
+    NodoBloque bloque;
 
     public boolean esPredefinido() {
         return esPredefinido;
@@ -35,6 +38,22 @@ public class Metodo extends Unidad {
 
     public Tipo obtenerTipoRetorno() {
         return tipoRetorno;
+    }
+
+    public void setearClase(Clase c){
+        pertenece = c;
+    }
+
+    public Clase perteneceAClase(){
+        return pertenece;
+    }
+
+    public void agregarBloque(NodoBloque b){
+        bloque = b;
+    }
+
+    public NodoBloque obtenerBloque(){
+        return bloque;
     }
 
     @Override
@@ -120,5 +139,9 @@ public class Metodo extends Unidad {
 
         sb.append(")");
         return sb.toString();
+    }
+
+    public void chequearSentencias() {
+        bloque.chequear();
     }
 }

@@ -16,6 +16,12 @@ public class NodoBloque extends NodoSentencia{
 
     @Override
     public void chequear() {
+        for(NodoSentencia s: sentencias){
+            s.chequear();
+        }
+    }
 
+    public void agregarSentencia(NodoSentencia sent) {
+        sentencias.add(sent);
     }
 }

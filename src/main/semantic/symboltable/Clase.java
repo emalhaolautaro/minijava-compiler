@@ -242,6 +242,13 @@ public class Clase extends Elemento {
     // Estado para DFS
     private enum Estado { NO_VISITADO, VISITANDO, VISITADO }
 
+    public void chequearSentencias() {
+        for (Metodo m : metodos.values()) {
+            if (m.tieneCuerpo() && !m.esPredefinido()) {
+                m.chequearSentencias();
+            }
+        }
+    }
 
     @Override
     public void consolidar(TablaSimbolos ts) throws SemanticException {

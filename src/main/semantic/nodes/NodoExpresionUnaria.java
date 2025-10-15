@@ -2,7 +2,7 @@ package main.semantic.nodes;
 
 import main.utils.Token;
 
-public class NodoExpresionUnaria extends NodoExpresionCompuesta{
+public class NodoExpresionUnaria{
     private NodoOperando operando;
     private Token operador;
 
@@ -19,7 +19,6 @@ public class NodoExpresionUnaria extends NodoExpresionCompuesta{
         return operador;
     }
 
-    @Override
     public void chequear() {
         // Implementar la lógica de chequeo para la expresión unaria
         // Por ejemplo, verificar que el tipo del operando sea compatible

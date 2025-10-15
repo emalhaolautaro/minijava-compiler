@@ -32,6 +32,8 @@ public class Main {
                 tablaSimbolos.declaracionCorrecta(tablaSimbolos);
                 // Segunda pasada: consolidación (herencia, atributos y métodos heredados)
                 tablaSimbolos.consolidar(tablaSimbolos);
+                // Chequeo de Sentencias
+                tablaSimbolos.chequearSentencias();
 
                 System.out.println("Chequeo semántico completado correctamente.");
                 System.out.println(tablaSimbolos.toString());

@@ -2,6 +2,7 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
+import main.semantic.nodes.NodoBloque;
 import main.utils.Token;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 public class Constructor extends Unidad {
     private Token visibilidad;
+    private NodoBloque bloque;
 
     public Constructor(Token nombre, Token visibilidad) {
         super(nombre);
@@ -19,6 +21,14 @@ public class Constructor extends Unidad {
 
     public Token obtenerVisibilidad() {
         return visibilidad;
+    }
+
+    public void agregarBloque(NodoBloque b){
+        bloque = b;
+    }
+
+    public NodoBloque obtenerBloque(){
+        return bloque;
     }
 
     @Override

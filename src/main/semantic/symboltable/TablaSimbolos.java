@@ -324,4 +324,10 @@ public class TablaSimbolos extends Elemento{
         sb.append("--- FIN DE LA TABLA DE SÍMBOLOS ---\n");
         return sb.toString();
     }
+
+    public void chequearSentencias() {
+        for (Clase c: clases.values()) {
+            c.chequearSentencias();
+        }
+    }
 }

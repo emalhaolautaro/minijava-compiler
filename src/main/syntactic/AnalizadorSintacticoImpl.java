@@ -9,6 +9,7 @@ import main.utils.Primeros;
 import main.utils.PrimerosImpl;
 import main.utils.Token;
 import main.utils.TokenImpl;
+import main.semantic.nodes.*;
 
 public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
 
@@ -97,7 +98,9 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             tablaSimbolos.setUnidadActual(cons);
 
             argsFormales();
-            bloque();
+
+            //agregar bloque al constructor
+            NodoBloque b = bloque();
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("public", tokenActual, sourceManager));
         }
@@ -121,9 +124,13 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             Metodo nuevoMetodo = new Metodo(modificador, tipoAM, nombre);
             tablaSimbolos.obtenerClaseActual().agregarMetodo(nuevoMetodo);
             tablaSimbolos.setUnidadActual(nuevoMetodo);
+            nuevoMetodo.setearClase(tablaSimbolos.obtenerClaseActual());
 
             argsFormales();
-            bloqueOpcional();
+
+            //agregar bloque
+            NodoBloque b = bloqueOpcional();
+            nuevoMetodo.agregarBloque(b);
         }else if(tipo.equals("void")){
             tipoAM = new Tipo(tokenActual);
             match("void");
@@ -133,53 +140,62 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             Metodo nuevoMetodo = new Metodo(null, tipoAM, nombre);
             tablaSimbolos.obtenerClaseActual().agregarMetodo(nuevoMetodo);
             tablaSimbolos.setUnidadActual(nuevoMetodo);
+            nuevoMetodo.setearClase(tablaSimbolos.obtenerClaseActual());
 
             argsFormales();
-            bloqueOpcional();
+
+            //agregar bloque
+            NodoBloque b = bloqueOpcional();
+            nuevoMetodo.agregarBloque(b);
         } else{
           throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo, modificador o 'void'", tokenActual, sourceManager));
         }
     }
 
-    private void bloqueOpcional() {
+    private NodoBloque bloqueOpcional() {
         String tipo = tokenActual.obtenerTipo();
         if(tipo.equals("LlaveIzq")){
-            bloque();
+            return bloque();
         }else if(tipo.equals("PuntoYComa")){
             match("PuntoYComa");
+            return new NodoBloqueNulo();
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("'{' o ';'", tokenActual, sourceManager));
         }
     }
 
-    private void bloque() {
+    private NodoBloque bloque() {
         String tipo = tokenActual.obtenerTipo();
         if(tipo.equals("LlaveIzq")){
+            NodoBloque bloque = new NodoBloque();
             match("LlaveIzq");
             if(tablaSimbolos.obtenerUnidadActual() instanceof Metodo){
                 ((Metodo) tablaSimbolos.obtenerUnidadActual()).setearCuerpo();
             }
-            listaSentencias();
+            listaSentencias(bloque);
             match("LlaveDer");
+            return bloque;
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("'{'", tokenActual, sourceManager));
         }
     }
 
-    private void listaSentencias() {
+    private void listaSentencias(NodoBloque bloque) {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("Sentencia", tipo)){
-            sentencia();
-            listaSentencias();
+            NodoSentencia sent = sentencia();
+            bloque.agregarSentencia(sent);
+            listaSentencias(bloque);
         }else {
             //epsilon
         }
     }
 
-    private void sentencia() {
+    private NodoSentencia sentencia() {
         String tipo = tokenActual.obtenerTipo();
         if (tipo.equals("PuntoYComa")) { // Sentencia vacía
             match("PuntoYComa");
+            return new NodoSentenciaVacia();
         } else if (primeros.incluidoEnPrimeros("Expresion", tipo)) { // Sentencia de expresión
             expresion();
             match("PuntoYComa");
@@ -194,10 +210,11 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         } else if (primeros.incluidoEnPrimeros("While", tipo)) { // Sentencia while
             _while();
         } else if (primeros.incluidoEnPrimeros("Bloque", tipo)) { // Bloque de sentencias
-            bloque();
+            return bloque();
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("una sentencia", tokenActual, sourceManager));
         }
+        return new NodoSentenciaVacia();
     }
 
     private void _while() {

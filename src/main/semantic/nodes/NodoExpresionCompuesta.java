@@ -9,10 +9,6 @@ public class NodoExpresionCompuesta extends NodoExpresion{
         super(token);
     }
 
-    public void chequear() {
-
-    }
-
     public Tipo chequear(TablaSimbolos tabla) {
         return null;
     }
