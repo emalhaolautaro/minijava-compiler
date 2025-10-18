@@ -197,79 +197,90 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             match("PuntoYComa");
             return new NodoSentenciaVacia();
         } else if (primeros.incluidoEnPrimeros("Expresion", tipo)) { // Sentencia de expresión
-            expresion();
+            NodoExpresion exp = expresion();
             match("PuntoYComa");
+            return new NodoSentenciaExpresion(exp);
         } else if (primeros.incluidoEnPrimeros("VarLocal", tipo)) { // Declaración de variable local
-            varLocal();
+            NodoSentencia varLocal = varLocal();
             match("PuntoYComa");
+            return varLocal;
         } else if (primeros.incluidoEnPrimeros("Return", tipo)) { // Sentencia return
-            _return();
+            NodoSentencia ret = _return();
             match("PuntoYComa");
+            return ret;
         } else if (primeros.incluidoEnPrimeros("If", tipo)) { // Sentencia if
-            _if();
+            return _if();
         } else if (primeros.incluidoEnPrimeros("While", tipo)) { // Sentencia while
-            _while();
+            return _while();
         } else if (primeros.incluidoEnPrimeros("Bloque", tipo)) { // Bloque de sentencias
             return bloque();
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("una sentencia", tokenActual, sourceManager));
         }
-        return new NodoSentenciaVacia();
     }
 
-    private void _while() {
+    private NodoSentencia _while() {
         match("while");
         match("ParentesisIzq");
-        expresion();
+        NodoExpresion cond = expresion();
         match("ParentesisDer");
-        sentencia();
+        NodoSentencia sent = sentencia();
+        return new NodoWhile(cond, sent);
     }
 
-    private void _if() {
+    private NodoSentencia _if() {
         match("if");
         match("ParentesisIzq");
-        expresion();
+        NodoExpresion e = expresion();
         match("ParentesisDer");
-        sentencia();
-        _else();
+        NodoSentencia sentenciaThen = sentencia();
+        NodoSentencia sentenciaElse = _else();
+        return new NodoIf(e, sentenciaThen, sentenciaElse);
     }
 
-    private void _else() {
+    private NodoSentencia _else() {
         String tipo = tokenActual.obtenerTipo();
         if (tipo.equals("else")){
             match("else");
-            sentencia();
+            return sentencia();
         }else{
             //epsilon
         }
+        return new NodoSentenciaVacia();
     }
 
-    private void _return() {
+    private NodoSentencia _return() {
         match("return");
-        expresionOpcional();
+        NodoExpresion exp = expresionOpcional();
+        NodoReturn ret = new NodoReturn(exp);
+        return ret;
     }
 
-    private void expresionOpcional() {
+    private NodoExpresion expresionOpcional() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("Expresion", tipo)){
-            expresion();
+            return expresion();
         }else{
-            //epsilon
+            return new NodoExpresionVacia();
         }
     }
 
-    private void varLocal() {
+    private NodoSentencia varLocal() {
         match("var");
+        Token nombre = tokenActual;
         match("idMetVar");
+        NodoVariable var = new NodoVariable(nombre);
         match("Igual");
-        expresionCompuesta();
+        NodoExpresion expresion = expresionCompuesta();
+        return new NodoVarLocal(nombre, expresion);
     }
 
-    private void expresion() {
+    private NodoExpresion expresion() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("ExpresionCompuesta", tipo)){
-            expresionCompuesta();
+            NodoExpresion e = expresionCompuesta();
             expresionRecursivo();
+            return e;
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("una expresion", tokenActual, sourceManager));
         }
@@ -322,11 +333,12 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         }
     }
 
-    private void expresionCompuesta() {
+    private NodoExpresion expresionCompuesta() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("ExpresionBasica", tipo)){
-            expresionBasica();
+            NodoExpresion expBas = expresionBasica();
             expresionCompuestaRecursivo();
+            return expBas;
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("una expresion", tokenActual, sourceManager));
         }
@@ -343,27 +355,29 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         }
     }
 
-    private void expresionBasica() {
+    private NodoExpresion expresionBasica() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("OperadorUnario", tipo)) {
             operadorUnario();
             operando();
         } else if (primeros.incluidoEnPrimeros("Operando", tipo)) {
-            operando();
+            return operando();
         } else {
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un operando o un operador unario", tokenActual, sourceManager));
         }
+        return new NodoExpresionVacia();
     }
 
-    private void operando() {
+    private NodoExpresion operando() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("Primitivo", tipo)){
-            primitivo();
+            return primitivo();
         }else if(primeros.incluidoEnPrimeros("Referencia", tipo)){
             referencia();
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un literal o una referencia", tokenActual, sourceManager));
         }
+        return new NodoExpresionVacia();
     }
 
     private void referencia() {
@@ -483,18 +497,28 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         }
     }
 
-    private void primitivo() {
+    private NodoExpresion primitivo() {
         String tipo = tokenActual.obtenerTipo();
         if(tipo.equals("true")){
+            NodoExpresion bool = new NodoLiteralBoolean(tokenActual);
             match("true");
+            return bool;
         } else if (tipo.equals("false")) {
+            NodoExpresion bool = new NodoLiteralBoolean(tokenActual);
             match("false");
+            return bool;
         } else if (tipo.equals("intLiteral")) {
+            NodoExpresion intLit = new NodoLiteralInt(tokenActual);
             match("intLiteral");
+            return intLit;
         } else if (tipo.equals("charLiteral")) {
+            NodoExpresion charLit = new NodoLiteralChar(tokenActual);
             match("charLiteral");
+            return charLit;
         } else if (tipo.equals("null")) {
+            NodoExpresion nullLit = new NodoLiteralNull(tokenActual);
             match("null");
+            return nullLit;
         } else {
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un literal primitivo", tokenActual, sourceManager));
         }

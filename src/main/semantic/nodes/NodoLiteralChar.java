@@ -10,10 +10,13 @@ public class NodoLiteralChar extends NodoExpresion{
         super(valor);
     }
 
-/*
     public Tipo chequear() {
         // Tipo semántico: char
-        return new Tipo(new TokenImpl("palabra reservada", "char", valor.obtenerLinea()));
+        return new TipoChar(super.obtenerValor());
     }
-*/
+
+    @Override
+    public void imprimirAST(int i) {
+        System.out.println("- ".repeat(i) + "Literal char: " + obtenerValor().obtenerLexema());
+    }
 }

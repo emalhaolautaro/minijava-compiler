@@ -16,4 +16,9 @@ public class NodoElse extends NodoSentencia{
 
     }
 
+    @Override
+    public void imprimirAST(int nivel) {
+        System.out.println("- ".repeat(nivel) + "Else:");
+        sentenciaElse.imprimirAST(nivel + 1);
+    }
 }

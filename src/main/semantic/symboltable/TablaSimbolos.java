@@ -12,6 +12,7 @@ public class TablaSimbolos extends Elemento{
     private List<Clase> clasesOrdenadas;
     private Clase claseActual;
     private Unidad unidadActual;
+    private int cantClasesMain = 0;
     
     public TablaSimbolos(){
         resetearTabla();
@@ -28,6 +29,7 @@ public class TablaSimbolos extends Elemento{
         if(existeClase(nombre.obtenerLexema())){
             throw new SemanticException(SemanticErrorMessages.CLASE_REPETIDA(nombre, nombre.obtenerLexema()));
         }else{
+            if(nombre.obtenerLexema().equals("Main")) cantClasesMain++;
             clases.put(nombre, nuevaClase);
             clasesOrdenadas.add(nuevaClase);
         }
@@ -88,6 +90,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoRetornoRead = new Tipo(new TokenImpl(null, "int", -1));
         Metodo read = new Metodo(modificadorStatic, tipoRetornoRead, metodoRead);
         read.marcarComoPredefinido();
+        read.setearClase(system);
 
         //Crear metodo printB(boolean b)
         Token metodoPrintB = new TokenImpl(null, "printB", -1);
@@ -95,6 +98,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametroPrintB = new Tipo(new TokenImpl(null, "boolean", -1));
         Metodo printB = new Metodo(modificadorStatic, tipoRetornoPrintB, metodoPrintB);
         printB.marcarComoPredefinido();
+        printB.setearClase(system);
         try{
             printB.agregarParametro(new Parametro(tipoParametroPrintB, new TokenImpl(null, "b", -1)));
         }catch (SemanticException e) {
@@ -108,6 +112,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametroPrintC = new Tipo(new TokenImpl(null, "char", -1));
         Metodo printC = new Metodo(modificadorStatic, tipoRetornoPrintC, metodoPrintC);
         printC.marcarComoPredefinido();
+        printC.setearClase(system);
         try{
             printC.agregarParametro(new Parametro(tipoParametroPrintC, new TokenImpl(null, "c", -1)));
         }catch (SemanticException e) {
@@ -121,6 +126,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametroPrintI = new Tipo(new TokenImpl(null, "int", -1));
         Metodo printI = new Metodo(modificadorStatic, tipoRetornoPrintI, metodoPrintI);
         printI.marcarComoPredefinido();
+        printI.setearClase(system);
         try{
             printI.agregarParametro(new Parametro(tipoParametroPrintI, new TokenImpl(null, "i", -1)));
         }catch (SemanticException e) {
@@ -134,6 +140,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametroPrintS = new Tipo(new TokenImpl(null, "String", -1));
         Metodo printS = new Metodo(modificadorStatic, tipoRetornoPrintS, metodoPrintS);
         printS.marcarComoPredefinido();
+        printS.setearClase(system);
         try{
             printS.agregarParametro(new Parametro(tipoParametroPrintS, new TokenImpl(null, "s", -1)));
         }catch (SemanticException e) {
@@ -146,6 +153,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoRetornoPrintln = new Tipo(new TokenImpl(null, "void", -1));
         Metodo println = new Metodo(modificadorStatic, tipoRetornoPrintln, metodoPrintln);
         println.marcarComoPredefinido();
+        println.setearClase(system);
 
         //Crear metodo printBln(boolean b)
         Token metodoPrintBln = new TokenImpl(null, "printBln", -1);
@@ -153,6 +161,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametroPrintBln = new Tipo(new TokenImpl(null, "boolean", -1));
         Metodo printBln = new Metodo(modificadorStatic, tipoRetornoPrintBln, metodoPrintBln);
         printBln.marcarComoPredefinido();
+        printBln.setearClase(system);
         try{
             printBln.agregarParametro(new Parametro(tipoParametroPrintBln, new TokenImpl(null, "b", -1)));
         }catch (SemanticException e) {
@@ -166,6 +175,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametroPrintCln = new Tipo(new TokenImpl(null, "char", -1));
         Metodo printCln = new Metodo(modificadorStatic, tipoRetornoPrintCln, metodoPrintCln);
         printCln.marcarComoPredefinido();
+        printCln.setearClase(system);
         try{
             printCln.agregarParametro(new Parametro(tipoParametroPrintCln, new TokenImpl(null, "c", -1)));
         }catch (SemanticException e) {
@@ -179,6 +189,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametroPrintIln = new Tipo(new TokenImpl(null, "int", -1));
         Metodo printIln = new Metodo(modificadorStatic, tipoRetornoPrintIln, metodoPrintIln);
         printIln.marcarComoPredefinido();
+        printIln.setearClase(system);
         try{
             printIln.agregarParametro(new Parametro(tipoParametroPrintIln, new TokenImpl(null, "i", -1)));
         }catch (SemanticException e) {
@@ -192,6 +203,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametroPrintSln = new Tipo(new TokenImpl(null, "String", -1));
         Metodo printSln = new Metodo(modificadorStatic, tipoRetornoPrintSln, metodoPrintSln);
         printSln.marcarComoPredefinido();
+        printSln.setearClase(system);
         try{
             printSln.agregarParametro(new Parametro(tipoParametroPrintSln, new TokenImpl(null, "s", -1)));
         }catch (SemanticException e) {
@@ -259,7 +271,7 @@ public class TablaSimbolos extends Elemento{
         Tipo tipoParametro = new Tipo(new TokenImpl(null, "int", -1));
         Metodo metodo = new Metodo(modificador, tipoRetorno, metodoNombre);
         metodo.marcarComoPredefinido();
-
+        metodo.setearClase(object);
         try{
             metodo.agregarParametro(new Parametro(tipoParametro, new TokenImpl(null, "i", -1)));
             object.agregarMetodo(metodo);
@@ -283,6 +295,13 @@ public class TablaSimbolos extends Elemento{
     public void declaracionCorrecta(TablaSimbolos ts) {
         for (Clase c: clases.values()) {
             c.declaracionCorrecta(this);
+        }
+        if(cantClasesMain == 0){
+            throw new SemanticException(SemanticErrorMessages.CLASE_NO_DECLARADA("Main"));
+        }
+        if(cantClasesMain > 1){
+            throw new SemanticException(SemanticErrorMessages.CLASE_REPETIDA(obtenerClasePorNombre("Main").obtenerNombre()
+                    , "Main"));
         }
     }
 
@@ -328,6 +347,12 @@ public class TablaSimbolos extends Elemento{
     public void chequearSentencias() {
         for (Clase c: clases.values()) {
             c.chequearSentencias();
+        }
+    }
+
+    public void imprimirAST(){
+        for(Clase c: clases.values()){
+            c.imprimirAST();
         }
     }
 }

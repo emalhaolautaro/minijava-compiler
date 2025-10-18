@@ -1,8 +1,9 @@
 package main.semantic.nodes;
 
+import main.semantic.symboltable.Tipo;
 import main.utils.Token;
 
-public class NodoExpresion {
+public abstract class NodoExpresion {
     private Token valor;
 
     public NodoExpresion(){}
@@ -15,7 +16,9 @@ public class NodoExpresion {
         return valor;
     }
 
-    public void chequear(){
+    public abstract Tipo chequear();
 
+    public void imprimirAST(int i) {
+        System.out.print("- ".repeat(i) + "Expresion: " + valor.obtenerLexema());
     }
 }

@@ -36,7 +36,8 @@ public class Main {
                 tablaSimbolos.chequearSentencias();
 
                 System.out.println("Chequeo semántico completado correctamente.");
-                System.out.println(tablaSimbolos.toString());
+                //System.out.println(tablaSimbolos.toString());
+                tablaSimbolos.imprimirAST();
                 System.out.println("[SinErrores]");
             }catch (SyntacticException | SemanticException e){
                 System.out.println(e.getMessage());

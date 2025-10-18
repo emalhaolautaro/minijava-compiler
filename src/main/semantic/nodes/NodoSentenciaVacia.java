@@ -5,4 +5,9 @@ public class NodoSentenciaVacia extends NodoSentencia {
     public void chequear() {
 
     }
+
+    @Override
+    public void imprimirAST(int nivel) {
+        System.out.println("- ".repeat(nivel) + "NodoSentenciaVacia");
+    }
 }

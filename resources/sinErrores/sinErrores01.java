@@ -1,3 +1,4 @@
+///[SinErrores]
 class A{
     void metodo(){
         {
@@ -5,3 +6,5 @@ class A{
         }
     }
 }
+
+static class Main{}

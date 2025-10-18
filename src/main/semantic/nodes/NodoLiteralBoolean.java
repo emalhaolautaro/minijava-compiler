@@ -1,24 +1,20 @@
 package main.semantic.nodes;
 
-import main.utils.Token;
 import main.semantic.symboltable.Tipo;
-import main.utils.TokenImpl;
+import main.utils.Token;
 
 public class NodoLiteralBoolean extends NodoExpresion{
-    private Token valor;
-
     public NodoLiteralBoolean(Token valor) {
         super(valor);
     }
 
-    public Token obtenerValor() {
-        return valor;
+    public Tipo chequear() {
+        // Tipo semántico: boolean true
+        return new TipoBool(super.obtenerValor());
     }
 
-    /*
-    public Tipo chequear() {
-        // Tipo semántico: boolean
-        return new Tipo(new TokenImpl("palabra reservada", "boolean", valor.obtenerLinea()));
+    @Override
+    public void imprimirAST(int i) {
+        System.out.println("- ".repeat(i) + "Literal booleano: " + obtenerValor().obtenerLexema());
     }
-     */
 }

@@ -3,24 +3,32 @@ package main.semantic.nodes;
 import main.errorhandling.exceptions.SemanticException;
 import main.semantic.symboltable.TablaSimbolos;
 import main.semantic.symboltable.Tipo;
+import main.utils.Token;
 
 public class NodoVarLocal extends NodoSentencia{
-    private NodoVariable var;
-    private NodoExpresionCompuesta expresionCompuesta;
+    private Token var;
+    private NodoExpresion expresionAsignada;
 
-    public NodoVarLocal(NodoVariable var, NodoExpresionCompuesta expresionCompuesta){
+    public NodoVarLocal(Token var, NodoExpresion expresion){
         this.var = var;
-        this.expresionCompuesta = expresionCompuesta;
+        this.expresionAsignada = expresion;
     }
 
-    public NodoVariable obtenerVar(){
+    public Token obtenerVar(){
         return var;
     }
-    public NodoExpresionCompuesta obtenerExpresionCompuesta(){
-        return expresionCompuesta;
+    public NodoExpresion obtenerExpresion(){
+        return expresionAsignada;
     }
 
     public void chequear() throws SemanticException {
 
+    }
+
+    @Override
+    public void imprimirAST(int nivel) {
+        System.out.println("- ".repeat(nivel) + "VarLocal:");
+        System.out.println("- ".repeat(nivel + 1) + "Variable: " + var.obtenerLexema());
+        expresionAsignada.imprimirAST(nivel + 2);
     }
 }

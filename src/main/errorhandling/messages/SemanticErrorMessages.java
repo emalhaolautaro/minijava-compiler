@@ -135,4 +135,9 @@ public class SemanticErrorMessages {
         String mensaje = "El método " + s + " de la clase " + s1 + " no es abstracto y debe tener cuerpo";
         return format(mensaje, token);
     }
+
+    public static String CLASE_NO_DECLARADA(String main) {
+        String mensaje = "La clase " + main + " no fue declarada";
+        return mensaje;
+    }
 }

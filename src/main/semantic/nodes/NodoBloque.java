@@ -24,4 +24,11 @@ public class NodoBloque extends NodoSentencia{
     public void agregarSentencia(NodoSentencia sent) {
         sentencias.add(sent);
     }
+
+    public void imprimirAST(int nivel) {
+        System.out.println("- ".repeat(nivel)+"Bloque:");
+        for(NodoSentencia s: sentencias){
+            s.imprimirAST(nivel + 1);
+        }
+    }
 }

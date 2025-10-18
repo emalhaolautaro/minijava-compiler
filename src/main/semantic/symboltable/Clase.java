@@ -239,6 +239,13 @@ public class Clase extends Elemento {
         this.padre = object;
     }
 
+    public void imprimirAST() {
+        System.out.println("Clase: " + nombre.obtenerLexema());
+        for(Metodo m: metodos.values()){
+            m.imprimirAST(1);
+        }
+    }
+
     // Estado para DFS
     private enum Estado { NO_VISITADO, VISITANDO, VISITADO }
 

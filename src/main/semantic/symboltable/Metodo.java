@@ -144,4 +144,11 @@ public class Metodo extends Unidad {
     public void chequearSentencias() {
         bloque.chequear();
     }
+
+    public void imprimirAST(int nivel) {
+        System.out.println("- ".repeat(nivel) + "Metodo: " + nombre.obtenerLexema());
+        if (bloque != null) {
+            bloque.imprimirAST(nivel + 1);
+        }
+    }
 }

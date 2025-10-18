@@ -23,4 +23,8 @@ public class NodoVariable extends NodoOperando {
     public NodoEncadenado obtenerCadena(){
         return cad;
     }
+
+    public void imprimirAST(int i) {
+        System.out.println("- ".repeat(i) + "Variable: " + obtenerValor().obtenerLexema());
+    }
 }

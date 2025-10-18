@@ -1,5 +1,8 @@
 package main.semantic.nodes;
 
+import main.errorhandling.exceptions.SemanticException;
+import main.errorhandling.messages.SemanticTwoErrorMessages;
+
 public class NodoWhile extends NodoSentencia{
     private NodoExpresion condicion;
     private NodoSentencia sentencia;
@@ -20,5 +23,14 @@ public class NodoWhile extends NodoSentencia{
     @Override
     public void chequear() {
 
+    }
+
+    @Override
+    public void imprimirAST(int nivel) {
+        System.out.println("- ".repeat(nivel) + "While:");
+        if(!condicion.chequear().esCompatible(new TipoBool(null)))
+            throw new SemanticException(SemanticTwoErrorMessages.WHILE_COND_NO_BOOL(condicion));
+        condicion.imprimirAST(nivel + 1);
+        sentencia.imprimirAST(nivel + 1);
     }
 }

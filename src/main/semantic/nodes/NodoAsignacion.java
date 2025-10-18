@@ -1,6 +1,6 @@
 package main.semantic.nodes;
 
-public class NodoAsignacion extends NodoSentencia{
+public class NodoAsignacion {
     private NodoExpresionCompuesta izquierda;
     private NodoExpresion derecha;
 
@@ -9,7 +9,6 @@ public class NodoAsignacion extends NodoSentencia{
         this.derecha = derecha;
     }
 
-    @Override
     public void chequear() {
         // Implementar la lógica de chequeo para la asignación
         // Por ejemplo, verificar que los tipos de izquierda y derecha sean compatibles
