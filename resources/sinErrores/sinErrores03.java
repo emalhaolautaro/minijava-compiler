@@ -7,4 +7,6 @@ class A{
     }
 }
 
-class Main{}
+class Main{
+    static void main(){}
+}

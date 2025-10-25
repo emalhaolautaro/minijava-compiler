@@ -2,7 +2,6 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
-import main.semantic.nodes.TipoBool;
 import main.utils.Token;
 
 public class Tipo extends TipoAbstracto{
@@ -38,5 +37,9 @@ public class Tipo extends TipoAbstracto{
 
     public boolean esCompatible(Tipo tipo){
         return true;
+    }
+
+    public String obtenerTipo(){
+        return nombre.obtenerTipo();
     }
 }

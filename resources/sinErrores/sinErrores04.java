@@ -1,11 +1,10 @@
 ///[SinErrores]
 class Main{
     static void main(){
-        1;
-        'c';
-        null;
-        true;
-        false;
+        var a = 1;
+        var b = 'c';
+        var c = null;
+        var d = true;
+        var e = false;
     }
-
 }

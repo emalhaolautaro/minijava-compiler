@@ -1,9 +1,12 @@
 package main.syntactic;
 
+import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.exceptions.SyntacticException;
+import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.errorhandling.messages.SyntacticErrorMessages;
 import main.filemanager.SourceManager;
 import main.lexical.AnalizadorLexico;
+import main.semantic.symboltable.TablaSimbolos;
 import main.semantic.symboltable.*;
 import main.utils.Primeros;
 import main.utils.PrimerosImpl;
@@ -11,19 +14,22 @@ import main.utils.Token;
 import main.utils.TokenImpl;
 import main.semantic.nodes.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
 
     private Token tokenActual;
     private AnalizadorLexico aLex;
     private SourceManager sourceManager;
     private Primeros primeros;
-    private TablaSimbolos tablaSimbolos;
+    private TablaSimbolos ts;
 
     public AnalizadorSintacticoImpl(AnalizadorLexico aLex, SourceManager sourceManager, TablaSimbolos ts){
         this.aLex = aLex;
         tokenActual = aLex.proximoToken();
         this.sourceManager = sourceManager;
-        this.tablaSimbolos = ts;
+        this.ts = ts;
         primeros = new PrimerosImpl();
     }
 
@@ -53,8 +59,8 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         padre = herenciaOpcional();
 
         Clase nuevaClase = new Clase(modificador, nombre, padre);
-        tablaSimbolos.agregarClase(nombre, nuevaClase);
-        tablaSimbolos.setClaseActual(nuevaClase);
+        ts.agregarClase(nombre, nuevaClase);
+        ts.setClaseActual(nuevaClase);
 
 
         match("LlaveIzq");
@@ -94,13 +100,15 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             match("idClase");
 
             Constructor cons =  new Constructor(nombre, visibilidad);
-            tablaSimbolos.obtenerClaseActual().agregarConstructor(cons);
-            tablaSimbolos.setUnidadActual(cons);
+            ts.obtenerClaseActual().agregarConstructor(cons);
+            ts.setUnidadActual(cons);
 
             argsFormales();
 
             //agregar bloque al constructor
             NodoBloque b = bloque();
+            cons.agregarBloque(b);
+
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("public", tokenActual, sourceManager));
         }
@@ -122,9 +130,9 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             match("idMetVar");
 
             Metodo nuevoMetodo = new Metodo(modificador, tipoAM, nombre);
-            tablaSimbolos.obtenerClaseActual().agregarMetodo(nuevoMetodo);
-            tablaSimbolos.setUnidadActual(nuevoMetodo);
-            nuevoMetodo.setearClase(tablaSimbolos.obtenerClaseActual());
+            ts.obtenerClaseActual().agregarMetodo(nuevoMetodo);
+            ts.setUnidadActual(nuevoMetodo);
+            nuevoMetodo.setearClase(ts.obtenerClaseActual());
 
             argsFormales();
 
@@ -132,15 +140,15 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             NodoBloque b = bloqueOpcional();
             nuevoMetodo.agregarBloque(b);
         }else if(tipo.equals("void")){
-            tipoAM = new Tipo(tokenActual);
+            tipoAM = new TipoVoid(tokenActual);
             match("void");
             nombre = tokenActual;
             match("idMetVar");
 
             Metodo nuevoMetodo = new Metodo(null, tipoAM, nombre);
-            tablaSimbolos.obtenerClaseActual().agregarMetodo(nuevoMetodo);
-            tablaSimbolos.setUnidadActual(nuevoMetodo);
-            nuevoMetodo.setearClase(tablaSimbolos.obtenerClaseActual());
+            ts.obtenerClaseActual().agregarMetodo(nuevoMetodo);
+            ts.setUnidadActual(nuevoMetodo);
+            nuevoMetodo.setearClase(ts.obtenerClaseActual());
 
             argsFormales();
 
@@ -169,8 +177,8 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         if(tipo.equals("LlaveIzq")){
             NodoBloque bloque = new NodoBloque();
             match("LlaveIzq");
-            if(tablaSimbolos.obtenerUnidadActual() instanceof Metodo){
-                ((Metodo) tablaSimbolos.obtenerUnidadActual()).setearCuerpo();
+            if(ts.obtenerUnidadActual() instanceof Metodo){
+                ((Metodo) ts.obtenerUnidadActual()).setearCuerpo();
             }
             listaSentencias(bloque);
             match("LlaveDer");
@@ -250,10 +258,11 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
     }
 
     private NodoSentencia _return() {
+        if(ts.obtenerUnidadActual() instanceof Constructor)
+            throw new SemanticException(SemanticTwoErrorMessages.CONSTRUCTOR_RETURN_ERR(tokenActual, sourceManager));
         match("return");
         NodoExpresion exp = expresionOpcional();
-        NodoReturn ret = new NodoReturn(exp);
-        return ret;
+        return new NodoReturn(exp, ts.obtenerUnidadActual().obtenerTipoRetorno());
     }
 
     private NodoExpresion expresionOpcional() {
@@ -269,65 +278,101 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         match("var");
         Token nombre = tokenActual;
         match("idMetVar");
-        NodoVariable var = new NodoVariable(nombre);
+
+        if (ts.obtenerUnidadActual().existeVariableLocal(nombre.obtenerLexema()) ||
+                ts.obtenerUnidadActual().existeParametro(nombre.obtenerLexema())) {
+            throw new SemanticException(SemanticTwoErrorMessages.VAR_LOCAL_EXISTENTE_ERR(nombre));
+        }
+
         match("Igual");
         NodoExpresion expresion = expresionCompuesta();
-        return new NodoVarLocal(nombre, expresion);
+
+        NodoVarLocal variable = new NodoVarLocal(nombre, expresion);
+        ts.obtenerUnidadActual().agregarVariableLocal(variable);
+
+        return variable;
     }
 
     private NodoExpresion expresion() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("ExpresionCompuesta", tipo)){
             NodoExpresion e = expresionCompuesta();
-            expresionRecursivo();
-            return e;
+            return expresionRecursivo(e);
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("una expresion", tokenActual, sourceManager));
         }
     }
 
-    private void expresionRecursivo() {
+    private NodoExpresion expresionRecursivo(NodoExpresion e) {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("OperadorAsignacion", tipo)){
             operadorAsignacion();
-            expresionCompuesta();
+            NodoExpresion exp = expresionCompuesta();
+            return new NodoAsignacion(e, exp);
         }else{
             //epsilon
         }
+        return e;
     }
 
     private void operadorAsignacion() {
         match("Igual");
     }
 
-    private void operadorBinario() {
+    private Token operadorBinario() {
         String tipo = tokenActual.obtenerTipo();
-        if (tipo.equals("OrCortocircuito")) { // ||
+        if (tipo.equals("OrCortocircuito")) {
+            Token or = tokenActual;
             match("OrCortocircuito");
+            return or;
         } else if (tipo.equals("AndCortocircuito")) { // &&
+            Token and = tokenActual;
             match("AndCortocircuito");
+            return and;
         } else if (tipo.equals("IgualIgual")) { // ==
+            Token igualigual = tokenActual;
             match("IgualIgual");
+            return igualigual;
         } else if (tipo.equals("NotIgual")) { // !=
+            Token notIgual = tokenActual;
             match("NotIgual");
+            return notIgual;
         } else if (tipo.equals("Menor")) { // <
+            Token menor = tokenActual;
             match("Menor");
+            return menor;
         } else if (tipo.equals("Mayor")) { // >
+            Token mayor = tokenActual;
             match("Mayor");
+            return mayor;
         } else if (tipo.equals("MenorIgual")) { // <=
+            Token menorIgual = tokenActual;
             match("MenorIgual");
+            return menorIgual;
         } else if (tipo.equals("MayorIgual")) { // >=
+            Token mayorIgual = tokenActual;
             match("MayorIgual");
+            return mayorIgual;
         } else if (tipo.equals("Mas")) { // +
+            Token mas = tokenActual;
             match("Mas");
+            return mas;
         } else if (tipo.equals("Menos")) { // -
+            Token menos = tokenActual;
             match("Menos");
+            return menos;
         } else if (tipo.equals("Por")) { // *
+            Token por = tokenActual;
             match("Por");
+            return por;
         } else if (tipo.equals("Dividir")) { // /
+            Token div = tokenActual;
             match("Dividir");
+            return div;
         } else if (tipo.equals("Modulo")) { // %
+            Token modulo = tokenActual;
             match("Modulo");
+            return modulo;
         } else {
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un operador binario", tokenActual, sourceManager));
         }
@@ -337,35 +382,37 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("ExpresionBasica", tipo)){
             NodoExpresion expBas = expresionBasica();
-            expresionCompuestaRecursivo();
-            return expBas;
+            return expresionCompuestaRecursivo(expBas);
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("una expresion", tokenActual, sourceManager));
         }
     }
 
-    private void expresionCompuestaRecursivo() {
+    private NodoExpresion expresionCompuestaRecursivo(NodoExpresion expresionIzq) {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("OperadorBinario", tipo)){
-            operadorBinario();
-            expresionBasica();
-            expresionCompuestaRecursivo();
+            Token opBin = operadorBinario();
+            NodoExpresion expDer = expresionBasica();
+            NodoExpresionBinaria expresionCompuesta = new NodoExpresionBinaria(opBin, expresionIzq, expDer);
+            return expresionCompuestaRecursivo(expresionCompuesta);
         }else{
             //epsilon
         }
+        return expresionIzq;
     }
 
     private NodoExpresion expresionBasica() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("OperadorUnario", tipo)) {
-            operadorUnario();
-            operando();
+            Token opUnario = operadorUnario();
+            NodoExpresion opNode = operando();
+            return new NodoExpresionUnaria(opNode, opUnario);
         } else if (primeros.incluidoEnPrimeros("Operando", tipo)) {
             return operando();
         } else {
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un operando o un operador unario", tokenActual, sourceManager));
         }
-        return new NodoExpresionVacia();
+        //return new NodoExpresionVacia();
     }
 
     private NodoExpresion operando() {
@@ -373,21 +420,22 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         if(primeros.incluidoEnPrimeros("Primitivo", tipo)){
             return primitivo();
         }else if(primeros.incluidoEnPrimeros("Referencia", tipo)){
-            referencia();
+            return referencia();
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un literal o una referencia", tokenActual, sourceManager));
         }
-        return new NodoExpresionVacia();
     }
 
-    private void referencia() {
+    private NodoExpresion referencia() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("Primario", tipo)){
-            primario();
+            NodoExpresion exp = primario();
             referenciaRecursivo();
+            return exp;
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un primario", tokenActual, sourceManager));
         }
+        //return new NodoExpresionVacia();
     }
 
     private void referenciaRecursivo() {
@@ -415,83 +463,107 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         }
     }
 
-    private void primario() {
+    private NodoExpresion primario() {
         String tipo = tokenActual.obtenerTipo();
         if(tipo.equals("this")){
+            NodoThis th = new NodoThis(tokenActual);
             match("this");
+            return th;
         }else if(tipo.equals("stringLiteral")){
+            NodoLiteralString literal = new NodoLiteralString(tokenActual);
             match("stringLiteral");
+            return literal;
         }else if(tipo.equals("idMetVar")){
+            Token id = tokenActual;
             match("idMetVar");
-            primarioSufijo();
+            return primarioSufijo(id);
         }else if(primeros.incluidoEnPrimeros("LlamadaConstructor", tipo)){
-            llamadaConstructor();
+            return llamadaConstructor();
         }else if(primeros.incluidoEnPrimeros("LlamadaMetodoEstatico", tipo)){
-            llamadaMetodoEstatico();
+            return llamadaMetodoEstatico();
         }else if(primeros.incluidoEnPrimeros("ExpresionParentizada", tipo)){
-            expresionParentizada();
+            return expresionParentizada();
         }
+        return new NodoExpresionVacia();
     }
 
-    private void expresionParentizada() {
+    private NodoExpresion expresionParentizada() {
         match("ParentesisIzq");
-        expresion();
+        NodoExpresion expPar = expresion();
         match("ParentesisDer");
+        return new NodoExpresionParentizada(expPar);
     }
 
-    private void llamadaMetodoEstatico() {
+    private NodoExpresion llamadaMetodoEstatico() {
+        Token id = tokenActual;
         match("idClase");
         match("Punto");
+        Token metodo = tokenActual;
         match("idMetVar");
-        argsActuales();
+        List<NodoExpresion> args = argsActuales();
+        return new NodoLlamadaMetodoEstatico(id, metodo, args);
     }
 
-    private void llamadaConstructor() {
+    private NodoExpresion llamadaConstructor() {
         match("new");
+        Token actual = tokenActual;
         match("idClase");
-        argsActuales();
+
+        //argumentos actuales
+        List<NodoExpresion> argumentos;
+        argumentos = argsActuales();
+
+        return new NodoLlamadaConstructor(actual, argumentos);
     }
 
-    private void primarioSufijo() {
+    private NodoExpresion primarioSufijo(Token id) {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("ArgsActuales", tipo)){
-            argsActuales();
+            List<NodoExpresion> args = argsActuales();
+            return new NodoLlamadaMetodo(id, args);
         }else{
             //epsilon
+            return new NodoAccesoVar(id);
         }
     }
 
-    private void argsActuales() {
+    private List<NodoExpresion> argsActuales() {
         match("ParentesisIzq");
-        listaExpsOpcional();
+        List<NodoExpresion> args = listaExpsOpcional();
         match("ParentesisDer");
+        return args;
     }
 
-    private void listaExpsOpcional() {
+    private List<NodoExpresion> listaExpsOpcional() {
         String tipo = tokenActual.obtenerTipo();
+        List<NodoExpresion> listaExps = new ArrayList<>();
         if (primeros.incluidoEnPrimeros("ListaExps", tipo)){
-            listaExps();
+            listaExps(listaExps);
+            return listaExps;
         }else{
             //epsilon
+            return listaExps;
         }
     }
 
-    private void listaExps() {
+    private void listaExps(List<NodoExpresion> listaExps) {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("Expresion", tipo)) {
-            expresion();
-            listaExpsRecursivo();
+            NodoExpresion exp = expresion();
+            listaExps.add(exp);
+            listaExpsRecursivo(listaExps);
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("expresion", tokenActual, sourceManager));
         }
     }
 
-    private void listaExpsRecursivo() {
+    private void listaExpsRecursivo(List<NodoExpresion> listaExps) {
         String tipo = tokenActual.obtenerTipo();
         if(tipo.equals("Coma")){
             match("Coma");
-            expresion();
-            listaExpsRecursivo();
+            NodoExpresion exp = expresion();
+            listaExps.add(exp);
+            listaExpsRecursivo(listaExps);
         }else{
             //epsilon
         }
@@ -524,18 +596,28 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         }
     }
 
-    private void operadorUnario() {
+    private Token operadorUnario() {
         String tipo = tokenActual.obtenerTipo();
         if(tipo.equals("Menos")){
+            Token menos = tokenActual;
             match("Menos");
+            return menos;
         } else if (tipo.equals("MenosMenos")) {
+            Token menosMenos = tokenActual;
             match("MenosMenos");
+            return menosMenos;
         } else if(tipo.equals("Not")){
+            Token not = tokenActual;
             match("Not");
+            return not;
         } else if (tipo.equals("Mas")) {
+            Token mas = tokenActual;
             match("Mas");
+            return mas;
         } else if (tipo.equals("MasMas")) {
+            Token masMas = tokenActual;
             match("MasMas");
+            return masMas;
         } else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un operador unario", tokenActual, sourceManager));
         }
@@ -590,7 +672,7 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             match("idMetVar");
 
             Parametro p = new Parametro(type, nombre);
-            tablaSimbolos.obtenerUnidadActual().agregarParametro(p);
+            ts.obtenerUnidadActual().agregarParametro(p);
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo", tokenActual, sourceManager));
         }
@@ -603,7 +685,7 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         if(primeros.incluidoEnPrimeros("Tipo", tipo)){
             type = tipo();
         }else if(tipo.equals("void")){
-            type = new Tipo(tokenActual);
+            type = new TipoVoid(tokenActual);
             match("void");
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo o 'void'", tokenActual, sourceManager));
@@ -637,23 +719,25 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         3. Un '(' para declarar un método.*/
         if (tipo.equals("Igual")) { // Atributo con inicialización
             Atributo nuevoAtributo = new Atributo(nombre, tipoAM, null);
-            tablaSimbolos.obtenerClaseActual().agregarAtributo(nuevoAtributo, tablaSimbolos);
+            ts.obtenerClaseActual().agregarAtributo(nuevoAtributo, ts);
 
             match("Igual");
             expresion();
             match("PuntoYComa");
         } else if(tipo.equals("PuntoYComa")){ // Atributo sin inicialización
             Atributo nuevoAtributo = new Atributo(nombre, tipoAM, null);
-            tablaSimbolos.obtenerClaseActual().agregarAtributo(nuevoAtributo, tablaSimbolos);
+            ts.obtenerClaseActual().agregarAtributo(nuevoAtributo, ts);
 
             match("PuntoYComa");
         } else if(tipo.equals("ParentesisIzq")){ // Es un método
             Metodo nuevoMetodo = new Metodo(null, tipoAM, nombre);
-            tablaSimbolos.obtenerClaseActual().agregarMetodo(nuevoMetodo);
-            tablaSimbolos.setUnidadActual(nuevoMetodo);
+            ts.obtenerClaseActual().agregarMetodo(nuevoMetodo);
+            ts.setUnidadActual(nuevoMetodo);
+            nuevoMetodo.setearClase(ts.obtenerClaseActual());
 
             argsFormales();
-            bloqueOpcional();
+            NodoBloque bloque  = bloqueOpcional();
+            nuevoMetodo.agregarBloque(bloque);
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("';', '=' o '('", tokenActual, sourceManager));
         }
@@ -665,7 +749,7 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         if(primeros.incluidoEnPrimeros("TipoPrimitivo", tipo)){
             type = tipoPrimitivo();
         }else if(tipo.equals("idClase")){
-            type = new Tipo(tokenActual);
+            type = new TipoClase(tokenActual);
             match("idClase");
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo primitivo o un id de clase", tokenActual, sourceManager));
@@ -677,13 +761,13 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         String tipo = tokenActual.obtenerTipo();
         Tipo type;
         if(tipo.equals("boolean")){
-            type = new Tipo(tokenActual);
+            type = new TipoBool(tokenActual);
             match("boolean");
         } else if (tipo.equals("char")) {
-            type = new Tipo(tokenActual);
+            type = new TipoChar(tokenActual);
             match("char");
         } else if (tipo.equals("int")) {
-            type = new Tipo(tokenActual);
+            type = new TipoInt(tokenActual);
             match("int");
         } else {
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un tipo primitivo", tokenActual, sourceManager));
@@ -700,7 +784,7 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             match("idClase");
         }else{
             //epsilon
-            retorno = new TokenImpl(null, "Object", -1);
+            retorno = new TokenImpl("idClase", "Object", -1);
         }
 
         return retorno;

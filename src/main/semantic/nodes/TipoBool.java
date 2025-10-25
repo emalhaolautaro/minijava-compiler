@@ -13,4 +13,7 @@ public class TipoBool extends Tipo {
         return tipo instanceof TipoBool;
     }
 
+    public String obtenerTipo() {
+        return "bool";
+    }
 }

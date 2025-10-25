@@ -1,8 +1,11 @@
-///[Error:a|4]
+///[Error:'c'|5]
 class Main{
     void m1(){
-        while(a){
+        var a = 1;
+        while('c'){
 
         }
     }
+
+    static void main(){}
 }

@@ -11,4 +11,8 @@ public class TipoInt extends Tipo {
     public boolean esCompatible(Tipo t){
         return t instanceof TipoInt;
     }
+
+    public String obtenerTipo(){
+        return "int";
+    }
 }

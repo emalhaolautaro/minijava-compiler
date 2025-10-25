@@ -1,13 +1,13 @@
 package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
-import main.semantic.symboltable.TablaSimbolos;
 import main.semantic.symboltable.Tipo;
 import main.utils.Token;
 
 public class NodoVarLocal extends NodoSentencia{
     private Token var;
     private NodoExpresion expresionAsignada;
+    private Tipo tipoVar;
 
     public NodoVarLocal(Token var, NodoExpresion expresion){
         this.var = var;
@@ -20,9 +20,12 @@ public class NodoVarLocal extends NodoSentencia{
     public NodoExpresion obtenerExpresion(){
         return expresionAsignada;
     }
+    public Tipo obtenerTipo(){
+        return tipoVar;
+    }
 
     public void chequear() throws SemanticException {
-
+        this.tipoVar = expresionAsignada.chequear();
     }
 
     @Override

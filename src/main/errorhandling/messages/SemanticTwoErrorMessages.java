@@ -1,6 +1,8 @@
 package main.errorhandling.messages;
 
+import main.filemanager.SourceManager;
 import main.semantic.nodes.NodoExpresion;
+import main.semantic.symboltable.Tipo;
 import main.utils.Token;
 
 public class SemanticTwoErrorMessages {
@@ -25,5 +27,113 @@ public class SemanticTwoErrorMessages {
     public static String WHILE_COND_NO_BOOL(NodoExpresion condicion) {
         String mensaje = "La condicion del while no es booleana: " + condicion.obtenerValor().obtenerLexema();
         return format(mensaje, condicion.obtenerValor());
+    }
+
+    public static String CONSTRUCTOR_RETURN_ERR(Token tokenActual, SourceManager sourceManager) {
+        String mensaje = "El constructor no debe retornar un valor.";
+        return format(mensaje, tokenActual);
+    }
+
+    public static String VAR_LOCAL_EXISTENTE_ERR(Token nombre) {
+        String mensaje = "La variable local '" + nombre.obtenerLexema() + "' ya ha sido declarada en este ámbito.";
+        return format(mensaje, nombre);
+    }
+
+    public static String RETORNO_NO_COMPATIBLE(NodoExpresion retorno, Tipo tipoMetodo, Tipo tipoRetorno) {
+        String mensaje = "El tipo de retorno '" + tipoRetorno.obtenerNombre().obtenerLexema() + "' no es compatible con el tipo del método '" + tipoMetodo.obtenerNombre().obtenerLexema() + "'.";
+        return format(mensaje, retorno.obtenerValor());
+    }
+
+    public static String TIPOS_INCOMPATIBLES_ASIGNACION(String tipoIzquierda, Token tipoDerecha) {
+        String mensaje = "Tipos incompatibles en asignación: no se puede asignar un valor de tipo '" + tipoDerecha.obtenerLexema() + "' a una variable de tipo '" + tipoIzquierda+ "'.";
+        return format(mensaje, tipoDerecha);
+    }
+
+    public static String TIPOS_INCOMPATIBLES_EXPRESION(String s, String s1, String s2, Token derecha) {
+        String mensaje = "Los tipos " + s + " y " + s1 + " son incompatibles para la operacion " + s2;
+        return format(mensaje, derecha);
+    }
+
+    public static String TIPOS_INCOMPATIBLES_UNARIA(String s, Token op) {
+        String mensaje = "El tipo " + s + " es incompatible con el operador " + op.obtenerLexema();
+        return format(mensaje, op);
+    }
+
+    public static String SENTENCIA_EXPRESION_NO_VALIDA(Token token) {
+        String mensaje = "La sentencia de expresión no es válida. Se esperaba una asignación o una llamada, pero se encontró: " + token.obtenerLexema();
+        return format(mensaje, token);
+    }
+
+    public static String THIS_FUERA_DE_CLASE(Token token) {
+        String mensaje = "El uso de 'this' fuera de una clase no es permitido.";
+        return format(mensaje, token);
+    }
+
+    public static String THIS_FUERA_DE_METODO(Token token) {
+        String mensaje = "El uso de 'this' fuera de un método no es permitido.";
+        return format(mensaje, token);
+    }
+
+    public static String THIS_EN_METODO_STATIC(Token token) {
+        String mensaje = "El uso de 'this' en un método estático no es permitido.";
+        return format(mensaje, token);
+    }
+
+    public static String VARIABLE_NO_DECLARADA(Token token) {
+        String mensaje = "La variable '" + token.obtenerLexema() + "' no ha sido declarada en este ámbito.";
+        return format(mensaje, token);
+    }
+
+    public static String ACCESO_ATRIBUTO_NO_STATIC_DESDE_METODO_STATIC(Token nombreVar) {
+        String mensaje = "No se puede acceder al atributo '" + nombreVar.obtenerLexema() + "' desde un método estático.";
+        return format(mensaje, nombreVar);
+    }
+
+    public static String CLASE_NO_DECLARADA(Token token) {
+        String mensaje = "La clase '" + token.obtenerLexema() + "' no ha sido declarada.";
+        return format(mensaje, token);
+    }
+
+    public static String CONSTRUCTOR_NO_ENCONTRADO(Token token) {
+        String mensaje = "No se encontró un constructor en la clase '" + token.obtenerLexema() + "' que acepte la cantidad de parametros o tipos pasados";
+        return format(mensaje, token);
+    }
+
+    public static String METODO_ESTATICO_INEXISTENTE(Token metodo) {
+        String mensaje = "El método estático '" + metodo.obtenerLexema() + "' no existe en la clase especificada.";
+        return format(mensaje, metodo);
+    }
+
+    public static String METODO_NO_ESTATICO(Token metodo, Token clase) {
+        String mensaje = "El método '" + metodo.obtenerLexema() + "' de la clase '" + clase.obtenerLexema() + "' no es estático.";
+        return format(mensaje, metodo);
+    }
+
+    public static String TIPO_ARGUMENTO_INCORRECTO(Token metodo, int i, Tipo tipoParametro, Tipo tipoArgumento) {
+        String mensaje = "El tipo del argumento " + i + " en la llamada al método " + metodo.obtenerLexema() +
+                " es incorrecto. Se esperaba un tipo " + tipoParametro.obtenerNombre().obtenerLexema() +
+                " pero se recibió un tipo " + tipoArgumento.obtenerNombre().obtenerLexema() + ".";
+        return format(mensaje, metodo);
+    }
+
+    public static String CANTIDAD_ARGUMENTOS_INCORRECTA(Token metodo, int size, int size1) {
+        String mensaje = "La cantidad de argumentos en la llamada al método " + metodo.obtenerLexema() +
+                " es incorrecta. Se esperaban " + size + " pero se recibieron " + size1 + ".";
+        return format(mensaje, metodo);
+    }
+
+    public static String METODO_EN_CLASE_INEXISTENTE(Token nombre) {
+        String mensaje = "No se puede llamar al método '" + nombre.obtenerLexema() + "' porque no se está dentro de una clase.";
+        return format(mensaje, nombre);
+    }
+
+    public static String METODO_INEXISTENTE(Token nombre) {
+        String mensaje = "El método '" + nombre.obtenerLexema() + "' no existe en la clase actual o en sus ancestros.";
+        return format(mensaje, nombre);
+    }
+
+    public static String METODO_EN_TIPO_NO_CLASE(Token nombre, Tipo tipoBase) {
+        String mensaje = "No se puede llamar al método '" + nombre.obtenerLexema() + "' en el tipo '" + tipoBase.obtenerNombre().obtenerLexema() + "' porque no es una clase.";
+        return format(mensaje, nombre);
     }
 }

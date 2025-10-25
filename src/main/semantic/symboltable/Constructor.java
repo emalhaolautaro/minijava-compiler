@@ -3,6 +3,7 @@ package main.semantic.symboltable;
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
 import main.semantic.nodes.NodoBloque;
+import main.semantic.nodes.NodoExpresion;
 import main.utils.Token;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class Constructor extends Unidad {
     }
 
     public void agregarBloque(NodoBloque b){
-        bloque = b;
+        this.bloque = b;
     }
 
     public NodoBloque obtenerBloque(){
@@ -77,5 +78,34 @@ public class Constructor extends Unidad {
 
         sb.append(")");
         return sb.toString();
+    }
+
+    public void chequearSentencias() {
+        bloque.chequear();
+    }
+
+    public void imprimirAST(int nivel){
+        System.out.println("- ".repeat(nivel) + "Constructor: " + nombre.obtenerLexema());
+        if (bloque != null) {
+            bloque.imprimirAST(nivel + 1);
+        }
+    }
+
+    public boolean coincideParametros(List<NodoExpresion> argumentos) {
+        List<Parametro> parametros = this.obtenerParametros();
+        if (parametros.size() != argumentos.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < parametros.size(); i++) {
+            Tipo tipoParametro = parametros.get(i).obtenerTipo();
+            Tipo tipoArgumento = argumentos.get(i).chequear();
+
+            if (!tipoParametro.esCompatible(tipoArgumento)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

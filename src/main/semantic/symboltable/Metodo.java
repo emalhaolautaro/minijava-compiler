@@ -3,6 +3,7 @@ package main.semantic.symboltable;
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
 import main.semantic.nodes.NodoBloque;
+import main.semantic.nodes.NodoBloqueNulo;
 import main.utils.Token;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class Metodo extends Unidad {
     private boolean tieneCuerpo = false;
     private boolean esPredefinido = false;
     private Clase pertenece;
-    NodoBloque bloque;
+    private NodoBloque bloque;
 
     public boolean esPredefinido() {
         return esPredefinido;
@@ -30,12 +31,14 @@ public class Metodo extends Unidad {
         super(nombre);
         this.modificador = modificador;
         this.tipoRetorno = tipoRetorno;
+        bloque = new NodoBloqueNulo();
     }
 
     public Token obtenerModificador() {
         return modificador;
     }
 
+    @Override
     public Tipo obtenerTipoRetorno() {
         return tipoRetorno;
     }

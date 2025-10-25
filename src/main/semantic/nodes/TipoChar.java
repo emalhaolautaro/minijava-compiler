@@ -11,4 +11,8 @@ public class TipoChar extends Tipo {
     public boolean esCompatible(Tipo t){
         return t instanceof TipoChar;
     }
+
+    public String obtenerTipo(){
+        return "char";
+    }
 }

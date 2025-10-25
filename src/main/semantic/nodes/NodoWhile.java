@@ -22,14 +22,13 @@ public class NodoWhile extends NodoSentencia{
 
     @Override
     public void chequear() {
-
+        if(!condicion.chequear().esCompatible(new TipoBool(null)))
+            throw new SemanticException(SemanticTwoErrorMessages.WHILE_COND_NO_BOOL(condicion));
     }
 
     @Override
     public void imprimirAST(int nivel) {
         System.out.println("- ".repeat(nivel) + "While:");
-        if(!condicion.chequear().esCompatible(new TipoBool(null)))
-            throw new SemanticException(SemanticTwoErrorMessages.WHILE_COND_NO_BOOL(condicion));
         condicion.imprimirAST(nivel + 1);
         sentencia.imprimirAST(nivel + 1);
     }

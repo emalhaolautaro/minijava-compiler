@@ -1,6 +1,5 @@
 package main.semantic.nodes;
 
-import main.semantic.symboltable.TablaSimbolos;
 import main.semantic.symboltable.Tipo;
 import main.utils.Token;
 

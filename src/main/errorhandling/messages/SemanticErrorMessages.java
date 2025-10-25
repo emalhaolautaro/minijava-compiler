@@ -1,6 +1,8 @@
 package main.errorhandling.messages;
 
+import main.semantic.symboltable.Tipo;
 import main.utils.Token;
+import main.utils.TokenImpl;
 
 public class SemanticErrorMessages {
 
@@ -136,8 +138,19 @@ public class SemanticErrorMessages {
         return format(mensaje, token);
     }
 
-    public static String CLASE_NO_DECLARADA(String main) {
-        String mensaje = "La clase " + main + " no fue declarada";
-        return mensaje;
+
+    public static String METODO_STATIC_REDEFINIDO_INCORRECTAMENTE(Token token, String nombreMetodo, String s) {
+        String mensaje = "El método static " + nombreMetodo + " de la clase " + s + " no puede redefinir un método no static";
+        return format(mensaje, token);
+    }
+
+    public static String METODO_MAIN_NO_DECLARADO() {
+        String mensaje = "No se ha declarado el método main en ninguna clase que sea estático, no retorne nada y no tenga argumentos.";
+        return format(mensaje, new TokenImpl("","",0));
+    }
+
+    public static String METODO_MAIN_REPETIDO(Token tokenMainEncontrado) {
+        String mensaje = "El método main ya ha sido declarado anteriormente.";
+        return format(mensaje, tokenMainEncontrado);
     }
 }

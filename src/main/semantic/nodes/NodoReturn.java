@@ -1,13 +1,16 @@
 package main.semantic.nodes;
 
+import main.errorhandling.exceptions.SemanticException;
+import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.semantic.symboltable.Tipo;
 
 public class NodoReturn extends NodoSentencia{
     private NodoExpresion retorno;
     private Tipo tipoMetodo;
 
-    public NodoReturn(NodoExpresion expresion) {
+    public NodoReturn(NodoExpresion expresion, Tipo tipoRet) {
         retorno = expresion;
+        tipoMetodo = tipoRet;
     }
 
     public NodoExpresion obtenerRetorno(){
@@ -22,10 +25,12 @@ public class NodoReturn extends NodoSentencia{
         tipoMetodo = t;
     }
 
-
     @Override
     public void chequear() {
-        Tipo tipoRet = retorno.chequear();
+        Tipo tipoRetorno = retorno.chequear();
+        if (!tipoRetorno.esCompatible(tipoMetodo))
+            throw new SemanticException(SemanticTwoErrorMessages.RETORNO_NO_COMPATIBLE(retorno, tipoMetodo, tipoRetorno));
+
     }
 
     @Override

@@ -19,7 +19,7 @@ public abstract class Elemento {
 
     public abstract void declaracionCorrecta(TablaSimbolos ts);
 
-    protected Token obtenerNombre() {
+    public Token obtenerNombre() {
         return nombre;
     }
 

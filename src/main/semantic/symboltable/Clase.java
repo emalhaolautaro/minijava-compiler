@@ -2,10 +2,13 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
+import main.semantic.nodes.NodoBloqueNulo;
 import main.utils.Token;
 import main.utils.TokenImpl;
 
 import java.util.*;
+
+import static main.Main.tablaSimbolos;
 
 public class Clase extends Elemento {
     private Token modificador;
@@ -85,8 +88,20 @@ public class Clase extends Elemento {
         return atributos;
     }
 
+    public Atributo obtenerAtributo(String nombre) {
+        return atributos.get(nombre);
+    }
+
+    public boolean existeAtributo(String nombre) {
+        return atributos.containsKey(nombre);
+    }
+
     public Map<String, Metodo> obtenerMetodos() {
         return metodos;
+    }
+
+    public Metodo obtenerMetodo(String nombre) {
+        return metodos.get(nombre);
     }
 
     public Map<String, Constructor> obtenerConstructor() {
@@ -179,6 +194,7 @@ public class Clase extends Elemento {
             Token nombrePredefinido = new TokenImpl("idClase", nombre.obtenerLexema(), -1);
             Token modificadorPredefinido = new TokenImpl("public", "public", -1);
             Constructor predefinido = new Constructor(nombrePredefinido, modificadorPredefinido);
+            predefinido.agregarBloque(new NodoBloqueNulo());
             constructores.put(nombrePredefinido.obtenerLexema(), predefinido);
         }
     }
@@ -241,6 +257,10 @@ public class Clase extends Elemento {
 
     public void imprimirAST() {
         System.out.println("Clase: " + nombre.obtenerLexema());
+        for(Constructor c: constructores.values()){
+            c.imprimirAST(1);
+        }
+
         for(Metodo m: metodos.values()){
             m.imprimirAST(1);
         }
@@ -250,8 +270,14 @@ public class Clase extends Elemento {
     private enum Estado { NO_VISITADO, VISITANDO, VISITADO }
 
     public void chequearSentencias() {
+        for(Constructor c : constructores.values()) {
+            tablaSimbolos.setUnidadActual(c);
+            c.chequearSentencias();
+        }
+
         for (Metodo m : metodos.values()) {
             if (m.tieneCuerpo() && !m.esPredefinido()) {
+                tablaSimbolos.setUnidadActual(m);
                 m.chequearSentencias();
             }
         }
@@ -275,6 +301,7 @@ public class Clase extends Elemento {
                 String nombreAtrib = a.obtenerNombre().obtenerLexema();
                 if (!atributos.containsKey(nombreAtrib)) {
                     atributos.put(nombreAtrib, a); // heredamos
+                    System.out.println(">> " + this.nombre.obtenerLexema() + " hereda atributo " + nombreAtrib);
                 }
                 // NO lanzamos error si ya existe, eso se chequea al agregar el atributo explícitamente
             }
@@ -302,6 +329,16 @@ public class Clase extends Elemento {
                         throw new SemanticException(SemanticErrorMessages.METODO_REDEFINICION_FIRMA_INVALIDA(
                                 nombre, metodoHijo.obtenerNombre().obtenerLexema(), clasePadre.obtenerNombre().obtenerLexema()
                         ));
+                    }
+
+                    if (metodoPadre.esStatic() != metodoHijo.esStatic()) {
+                        throw new SemanticException(
+                                SemanticErrorMessages.METODO_STATIC_REDEFINIDO_INCORRECTAMENTE(
+                                        metodoHijo.obtenerNombre(),
+                                        nombreMetodo,
+                                        nombre.obtenerLexema()
+                                )
+                        );
                     }
                 } else {
                     metodos.put(nombreMetodo, metodoPadre);

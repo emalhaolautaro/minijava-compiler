@@ -20,7 +20,7 @@ public class Main {
     private static SourceManager sourceManager;
     private static AnalizadorLexico analizadorLexico;
     private static AnalizadorSintactico analizadorSintactico;
-    private static TablaSimbolos tablaSimbolos;
+    public static TablaSimbolos tablaSimbolos;
 
     public static void main(String[] args) {
         if(args.length == 1){
@@ -35,9 +35,9 @@ public class Main {
                 // Chequeo de Sentencias
                 tablaSimbolos.chequearSentencias();
 
+                tablaSimbolos.imprimirAST();
                 System.out.println("Chequeo semántico completado correctamente.");
                 //System.out.println(tablaSimbolos.toString());
-                tablaSimbolos.imprimirAST();
                 System.out.println("[SinErrores]");
             }catch (SyntacticException | SemanticException e){
                 System.out.println(e.getMessage());
