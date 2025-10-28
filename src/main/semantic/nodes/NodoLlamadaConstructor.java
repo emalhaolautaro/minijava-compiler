@@ -14,6 +14,7 @@ import static main.Main.tablaSimbolos;
 
 public class NodoLlamadaConstructor extends NodoExpresion{
     private List<NodoExpresion> argumentos;
+    private NodoEncadenado encadenado;
 
     public NodoLlamadaConstructor(Token nombreClase, List<NodoExpresion> argumentos) {
         super(nombreClase);
@@ -29,6 +30,9 @@ public class NodoLlamadaConstructor extends NodoExpresion{
         for(NodoExpresion arg : argumentos) {
             arg.imprimirAST(nivel + 1);
         }
+        if (encadenado != null) {
+            encadenado.imprimirAST(nivel + 1);
+        }
     }
 
     @Override
@@ -40,15 +44,40 @@ public class NodoLlamadaConstructor extends NodoExpresion{
                     SemanticTwoErrorMessages.CLASE_NO_DECLARADA(obtenerValor()));
         }
 
+        boolean encontrado = false;
         Map<String, Constructor> constructor = clase.obtenerConstructor();
         for (Constructor c : constructor.values()) {
             if (c.coincideParametros(argumentos)) {
-                return new TipoClase(obtenerValor());
+                encontrado = true;
+                break;
             }
         }
 
-        throw new SemanticException(
-                SemanticTwoErrorMessages.CONSTRUCTOR_NO_ENCONTRADO(obtenerValor())
-        );
+        if (!encontrado) {
+            throw new SemanticException(
+                    SemanticTwoErrorMessages.CONSTRUCTOR_NO_ENCONTRADO(obtenerValor())
+            );
+        }
+
+        Tipo tipoBase = new TipoClase(clase.obtenerNombre());
+
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            return encadenado.chequear(tipoBase);
+        }
+
+        return tipoBase;
+    }
+
+    public void setEncadenado(NodoEncadenado e) {
+        this.encadenado = e;
+    }
+
+    public NodoEncadenado obtenerEncadenado() {
+        return encadenado;
+    }
+
+    @Override
+    public Token obtenerValor() {
+        return super.obtenerValor();
     }
 }

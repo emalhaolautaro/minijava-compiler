@@ -3,27 +3,82 @@ package main.semantic.nodes;
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.semantic.symboltable.Tipo;
+import main.utils.Token;
 
 public class NodoAsignacion extends NodoExpresion{
     private NodoExpresion izquierda;
     private NodoExpresion derecha;
+    private Token operadorAsignacion;
 
-    public NodoAsignacion(NodoExpresion izquierda, NodoExpresion derecha) {
+    public NodoAsignacion(NodoExpresion izquierda, NodoExpresion derecha, Token operadorAsignacion) {
+        this.operadorAsignacion = operadorAsignacion;
         this.izquierda = izquierda;
         this.derecha = derecha;
     }
 
     @Override
     public Tipo chequear() {
-        Tipo tipoIzquierda = izquierda.chequear();
-        Tipo tipoDerecha = derecha.chequear();
+        if (!esDestinoValido(izquierda)) {
+            Token tokenParaError;
 
-        if (!tipoIzquierda.esCompatible(tipoDerecha)) {
-            throw new SemanticException(SemanticTwoErrorMessages.TIPOS_INCOMPATIBLES_ASIGNACION(tipoIzquierda.obtenerTipo(),
-                    tipoDerecha.obtenerNombre()));
+            if (!(izquierda instanceof NodoLlamadaMetodo) && izquierda.obtenerValor() != null) {
+                tokenParaError = izquierda.obtenerValor();
+            } else if (izquierda instanceof NodoLlamadaMetodo) {
+                tokenParaError = ((NodoLlamadaMetodo) izquierda).obtenerNombre();
+            } else {
+                tokenParaError = operadorAsignacion;
+            }
+
+            throw new SemanticException(
+                    SemanticTwoErrorMessages.IZQUIERDA_ASIGNACION_NO_VALIDA(tokenParaError, operadorAsignacion)
+            );
         }
 
-        return tipoIzquierda;
+        Tipo tipoDestino = izquierda.chequear();
+        Tipo tipoOrigen = derecha.chequear();
+
+        if (!tipoOrigen.esCompatible(tipoDestino)) {
+            throw new SemanticException(
+                    SemanticTwoErrorMessages.TIPOS_INCOMPATIBLES_ASIGNACION(tipoDestino.obtenerNombre().obtenerLexema(),
+                            tipoOrigen.obtenerNombre(),
+                            operadorAsignacion
+                    ));
+        }
+
+        return tipoDestino;
+    }
+
+    private boolean esDestinoValido(NodoExpresion izquierda) {
+        if (izquierda instanceof NodoAccesoVar) {
+            NodoAccesoVar acceso = (NodoAccesoVar) izquierda;
+            NodoEncadenado enc = acceso.obtenerEncadenado();
+
+            if (enc == null || enc instanceof NodoEncadenadoVacio) {
+                return true;
+            } else {
+                return esUltimoEncadenadoUnAtributo(enc);
+            }
+
+        } else if (izquierda instanceof NodoThis) {
+            NodoThis nodoThis = (NodoThis) izquierda;
+            NodoEncadenado enc = nodoThis.obtenerEncadenado();
+
+            if (enc == null || enc instanceof NodoEncadenadoVacio) {
+                return false;
+            } else {
+                return esUltimoEncadenadoUnAtributo(enc);
+            }
+        }
+
+        return false;
+    }
+
+    private boolean esUltimoEncadenadoUnAtributo(NodoEncadenado enc) {
+        while (enc.obtenerEncadenado() != null && !(enc.obtenerEncadenado() instanceof NodoEncadenadoVacio)) {
+            enc = enc.obtenerEncadenado();
+        }
+        NodoExpresion ultimoNodo = enc.obtenerIzquierda();
+        return (ultimoNodo instanceof NodoAccesoVar);
     }
 
     @Override

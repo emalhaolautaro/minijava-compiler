@@ -56,4 +56,8 @@ public class Parametro extends Elemento{
         // Retorna algo como "int cantidad" o "MiClase referencia"
         return this.tipo.obtenerNombre().obtenerLexema() + " " + this.obtenerNombre().obtenerLexema();
     }
+
+    public void imprimirAST(int i) {
+        System.out.println("- ".repeat(i) + "Parametro: " + tipo.obtenerNombre().obtenerLexema() + " " + nombre.obtenerLexema());
+    }
 }

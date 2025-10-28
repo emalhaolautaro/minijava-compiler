@@ -288,7 +288,7 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         NodoExpresion expresion = expresionCompuesta();
 
         NodoVarLocal variable = new NodoVarLocal(nombre, expresion);
-        ts.obtenerUnidadActual().agregarVariableLocal(variable);
+        //ts.obtenerUnidadActual().agregarVariableLocal(variable);
 
         return variable;
     }
@@ -306,9 +306,10 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
     private NodoExpresion expresionRecursivo(NodoExpresion e) {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("OperadorAsignacion", tipo)){
+            Token operadorAsign = tokenActual;;
             operadorAsignacion();
             NodoExpresion exp = expresionCompuesta();
-            return new NodoAsignacion(e, exp);
+            return new NodoAsignacion(e, exp, operadorAsign);
         }else{
             //epsilon
         }
@@ -430,7 +431,21 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("Primario", tipo)){
             NodoExpresion exp = primario();
-            referenciaRecursivo();
+            NodoEncadenado e = referenciaRecursivo();
+
+            if(exp instanceof NodoAccesoVar) {
+                ((NodoAccesoVar) exp).setEncadenado(e);
+            }else if(exp instanceof NodoThis){
+                ((NodoThis) exp).setEncadenado(e);
+            }else if(exp instanceof NodoLlamadaMetodo){
+                ((NodoLlamadaMetodo) exp).setEncadenado(e);
+            }else if(exp instanceof NodoLlamadaConstructor){
+                ((NodoLlamadaConstructor) exp).setEncadenado(e);
+            }else if(exp instanceof NodoLlamadaMetodoEstatico){
+                ((NodoLlamadaMetodoEstatico) exp).setEncadenado(e);
+            }else if(exp instanceof NodoExpresionParentizada){
+                ((NodoExpresionParentizada) exp).setEncadenado(e);
+            }
             return exp;
         }else{
             throw new SyntacticException(SyntacticErrorMessages.SYNTACTIC_ERR("un primario", tokenActual, sourceManager));
@@ -438,28 +453,37 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         //return new NodoExpresionVacia();
     }
 
-    private void referenciaRecursivo() {
+    private NodoEncadenado referenciaRecursivo() {
         String tipo = tokenActual.obtenerTipo();
         if(primeros.incluidoEnPrimeros("Encadenado", tipo)){
-            encadenado();
-            referenciaRecursivo();
+            NodoEncadenado enc = encadenado();
+            NodoEncadenado sigEnc = referenciaRecursivo();
+            enc.setEncadenado(sigEnc);
+            return enc;
         }else{
             //epsilon
+            return new NodoEncadenadoVacio();
         }
     }
 
-    private void encadenado() {
+    private NodoEncadenado encadenado() {
         match("Punto");
+        Token id = tokenActual;
         match("idMetVar");
-        encadenadoConOSinArgs();
+        return encadenadoConOSinArgs(id);
     }
 
-    private void encadenadoConOSinArgs() {
+    private NodoEncadenado encadenadoConOSinArgs(Token id) {
         String tipo = tokenActual.obtenerTipo();
-        if(primeros.incluidoEnPrimeros("ArgsActuales", tipo)){
-            argsActuales();
-        }else{
-            //epsilon
+
+        if (primeros.incluidoEnPrimeros("ArgsActuales", tipo)) {
+            List<NodoExpresion> args = argsActuales();
+            NodoLlamadaMetodo nodoIzquierda = new NodoLlamadaMetodo(id, args);
+            return new NodoEncadenado(nodoIzquierda, id);
+
+        } else {
+            NodoAccesoVar nodoIzquierda = new NodoAccesoVar(id);
+            return new NodoEncadenado(nodoIzquierda, id);
         }
     }
 

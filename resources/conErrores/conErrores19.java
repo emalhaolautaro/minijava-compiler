@@ -1,4 +1,4 @@
-///[Error:'c'|6]
+///[Error:=|6]
 class Main{
     int a;
     void metodo(){

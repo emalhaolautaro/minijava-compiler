@@ -5,6 +5,7 @@ import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.semantic.symboltable.Clase;
 import main.semantic.symboltable.Metodo;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
 import main.utils.Token;
 
 import java.util.List;
@@ -14,17 +15,11 @@ import static main.Main.tablaSimbolos;
 public class NodoLlamadaMetodo extends NodoExpresion{
     private Token nombre;
     private List<NodoExpresion> argumentos;
-    private NodoExpresion encadenado;
+    private NodoEncadenado encadenado;
 
     public NodoLlamadaMetodo(Token nombre, List<NodoExpresion> argumentos) {
         this.nombre = nombre;
         this.argumentos = argumentos;
-    }
-
-    public NodoLlamadaMetodo(Token nombre, List<NodoExpresion> argumentos, NodoExpresion base) {
-        this.nombre = nombre;
-        this.argumentos = argumentos;
-        this.encadenado = base;
     }
 
     public Token obtenerNombre() {
@@ -35,19 +30,16 @@ public class NodoLlamadaMetodo extends NodoExpresion{
         return argumentos;
     }
 
+    public Token obtenerValor(){ return nombre; }
+
     public void imprimirAST(int nivel){
         System.out.println("  ".repeat(nivel) + "LlamadaMetodo: " + nombre.obtenerLexema());
         for (NodoExpresion argumento : argumentos) {
             argumento.imprimirAST(nivel + 1);
         }
-    }
-
-    public NodoExpresion obtenerEncadenado(){
-        return encadenado;
-    }
-
-    public void agregarEncadenado(NodoExpresion encadenado){
-        this.encadenado = encadenado;
+        if (encadenado != null) {
+            encadenado.imprimirAST(nivel + 1);
+        }
     }
 
     @Override
@@ -60,7 +52,6 @@ public class NodoLlamadaMetodo extends NodoExpresion{
             );
         }
 
-        // Buscar el método en la clase actual o en sus ancestros
         Metodo m = claseActual.obtenerMetodo(nombre.obtenerLexema());
         if (m == null) {
             throw new SemanticException(
@@ -68,14 +59,21 @@ public class NodoLlamadaMetodo extends NodoExpresion{
             );
         }
 
-        // Verificar que no sea estático
+        Unidad unidadActual = tablaSimbolos.obtenerUnidadActual();
+
+        if (unidadActual instanceof Metodo && ((Metodo) unidadActual).esStatic()) {
+
+            if (!m.esStatic()) {
+                throw new SemanticException(SemanticTwoErrorMessages.METODO_DINAMICO_EN_METODO_ESTATICO(nombre));
+            }
+        }
+
         if (m.esStatic()) {
             throw new SemanticException(
                     SemanticTwoErrorMessages.METODO_ESTATICO_INEXISTENTE(nombre)
             );
         }
 
-        // Verificar cantidad de argumentos
         if (argumentos.size() != m.obtenerParametros().size()) {
             throw new SemanticException(
                     SemanticTwoErrorMessages.CANTIDAD_ARGUMENTOS_INCORRECTA(
@@ -84,7 +82,6 @@ public class NodoLlamadaMetodo extends NodoExpresion{
             );
         }
 
-        // Chequear tipos de cada argumento
         for (int i = 0; i < argumentos.size(); i++) {
             Tipo tipoArg = argumentos.get(i).chequear();
             Tipo tipoParam = m.obtenerParametros().get(i).obtenerTipo();
@@ -98,7 +95,20 @@ public class NodoLlamadaMetodo extends NodoExpresion{
             }
         }
 
-        // Retornar tipo de retorno del método
-        return m.obtenerTipoRetorno();
+        Tipo tipoBase = m.obtenerTipoRetorno();
+
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            return encadenado.chequear(tipoBase);
+        }
+
+        return tipoBase;
+    }
+
+    public void setEncadenado(NodoEncadenado e) {
+        encadenado = e;
+    }
+
+    public NodoEncadenado obtenerEncadenado() {
+        return encadenado;
     }
 }

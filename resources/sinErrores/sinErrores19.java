@@ -19,6 +19,7 @@ class Principal extends Utilidades{
     }
 
     static void main() {
-        metodo();
+        var p = new Principal();
+        p.metodo();
     }
 }

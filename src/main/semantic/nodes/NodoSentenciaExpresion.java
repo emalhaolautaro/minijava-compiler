@@ -2,6 +2,7 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.utils.Token;
 
 public class NodoSentenciaExpresion extends NodoSentencia{
     private NodoExpresion expresion;
@@ -22,14 +23,67 @@ public class NodoSentenciaExpresion extends NodoSentencia{
     public void chequear() {
         expresion.chequear();
 
-        //TODO: AGREGAR CHEQUEOS A MEDIDA QUE CREO LAS COSAS
-
-        if(!(expresion instanceof NodoAsignacion)
-        && !(expresion instanceof NodoLlamadaMetodo)
-        && !(expresion instanceof NodoLlamadaMetodoEstatico)
-        && !(expresion instanceof NodoLlamadaConstructor)){
-            throw new SemanticException(SemanticTwoErrorMessages.SENTENCIA_EXPRESION_NO_VALIDA(expresion.obtenerValor()));
+        NodoExpresion expRaiz = expresion;
+        while (expRaiz instanceof NodoExpresionParentizada) {
+            expRaiz = ((NodoExpresionParentizada) expRaiz).getExpresion();
         }
+
+        if (expresion instanceof NodoAsignacion) {
+            return;
+        }
+
+        if (expRaiz instanceof NodoLlamadaMetodo ||
+                expRaiz instanceof NodoLlamadaMetodoEstatico ||
+                expRaiz instanceof NodoLlamadaConstructor) {
+            return;
+        }
+
+        if (expRaiz instanceof NodoExpresionUnaria) {
+            NodoExpresionUnaria opUnaria = (NodoExpresionUnaria) expRaiz;
+            if (opUnaria.obtenerOperador().obtenerLexema().equals("++") || opUnaria.obtenerOperador().obtenerLexema().equals("--")) {
+                return;
+            }
+        }
+
+        if (expRaiz instanceof NodoAccesoVar || expRaiz instanceof NodoThis) {
+
+            NodoEncadenado enc;
+            if (expRaiz instanceof NodoAccesoVar) {
+                enc = ((NodoAccesoVar) expRaiz).obtenerEncadenado();
+            } else {
+                enc = ((NodoThis) expRaiz).obtenerEncadenado();
+            }
+
+            if (enc == null || enc instanceof NodoEncadenadoVacio) {
+                throw new SemanticException(SemanticTwoErrorMessages.SENTENCIA_EXPRESION_NO_VALIDA(expRaiz.obtenerValor()));
+            }
+
+            while (enc.obtenerEncadenado() != null && !(enc.obtenerEncadenado() instanceof NodoEncadenadoVacio)) {
+                enc = enc.obtenerEncadenado();
+            }
+
+            NodoExpresion ultimoNodo = enc.obtenerIzquierda();
+
+            if (ultimoNodo instanceof NodoLlamadaMetodo) {
+                return;
+            } else {
+                throw new SemanticException(SemanticTwoErrorMessages.SENTENCIA_EXPRESION_NO_VALIDA(enc.obtenerId()));
+            }
+        }
+
+        if (expresion instanceof NodoExpresionBinaria) {
+            NodoExpresionBinaria opBinaria = (NodoExpresionBinaria) expresion;
+            Token operador = opBinaria.obtenerValor();
+            throw new SemanticException(SemanticTwoErrorMessages.SENTENCIA_EXPRESION_NO_VALIDA(operador));
+        }
+
+        if (expresion instanceof NodoExpresionUnaria) {
+            NodoExpresionUnaria opUnaria = (NodoExpresionUnaria) expresion;
+            Token operador = opUnaria.obtenerOperador();
+            throw new SemanticException(SemanticTwoErrorMessages.SENTENCIA_EXPRESION_NO_VALIDA(operador));
+        }
+
+        throw new SemanticException(SemanticTwoErrorMessages.SENTENCIA_EXPRESION_NO_VALIDA(expresion.obtenerValor()));
     }
 
     @Override

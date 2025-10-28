@@ -266,6 +266,10 @@ public class Clase extends Elemento {
         }
     }
 
+    public boolean existeMetodo(String s) {
+        return metodos.containsKey(s);
+    }
+
     // Estado para DFS
     private enum Estado { NO_VISITADO, VISITANDO, VISITADO }
 

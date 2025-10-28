@@ -11,24 +11,35 @@ import main.utils.Token;
 import static main.Main.tablaSimbolos;
 
 public class NodoThis extends NodoExpresion{
+    private NodoEncadenado encadenado;
+
     public NodoThis(Token valor){
         super(valor);
     }
 
+    public void setEncadenado(NodoEncadenado encadenado) {
+        this.encadenado = encadenado;
+    }
+
+    public NodoEncadenado obtenerEncadenado() {
+        return encadenado;
+    }
+
     public void imprimirAST(int nivel){
         System.out.println("- ".repeat(nivel) + "This");
+        if (encadenado != null) {
+            encadenado.imprimirAST(nivel + 1);
+        }
     }
 
     @Override
     public Tipo chequear() {
-        // El tipo de 'this' es la clase actual
         Clase claseActual = tablaSimbolos.obtenerClaseActual();
 
         if (claseActual == null) {
             throw new SemanticException(SemanticTwoErrorMessages.THIS_FUERA_DE_CLASE(obtenerValor()));
         }
 
-        // Obtener el método actual desde la tabla de símbolos
         Unidad unidadActual = tablaSimbolos.obtenerUnidadActual();
 
         if (unidadActual == null) {
@@ -39,6 +50,12 @@ public class NodoThis extends NodoExpresion{
             throw new SemanticException(SemanticTwoErrorMessages.THIS_EN_METODO_STATIC(obtenerValor()));
         }
 
-        return new TipoClase(claseActual.obtenerNombre());
+        TipoClase tipoThis = new TipoClase(claseActual.obtenerNombre());
+
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            return encadenado.chequear(tipoThis);
+        }
+
+        return tipoThis;
     }
 }

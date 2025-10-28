@@ -17,6 +17,7 @@ public class NodoLlamadaMetodoEstatico extends NodoExpresion{
     private Token clase;
     private Token metodo;
     private List<NodoExpresion> argumentos = new ArrayList<>();
+    private NodoEncadenado encadenado;
 
     public NodoLlamadaMetodoEstatico(Token clase, Token metodo, List<NodoExpresion> parametros) {
         this.clase = clase;
@@ -53,6 +54,9 @@ public class NodoLlamadaMetodoEstatico extends NodoExpresion{
         for (NodoExpresion parametro : argumentos) {
             parametro.imprimirAST(nivel + 1);
         }
+        if (encadenado != null) {
+            encadenado.imprimirAST(nivel + 1);
+        }
     }
 
     @Override
@@ -71,7 +75,6 @@ public class NodoLlamadaMetodoEstatico extends NodoExpresion{
             throw new SemanticException(SemanticTwoErrorMessages.METODO_NO_ESTATICO(metodo, clase));
         }
 
-        // Chequear cantidad de argumentos
         if (argumentos.size() != m.obtenerParametros().size()) {
             throw new SemanticException(SemanticTwoErrorMessages.CANTIDAD_ARGUMENTOS_INCORRECTA(
                     metodo,
@@ -80,7 +83,6 @@ public class NodoLlamadaMetodoEstatico extends NodoExpresion{
             ));
         }
 
-        //Chequear tipos de argumentos
         for (int i = 0; i < argumentos.size(); i++) {
             Tipo tipoArgumento = argumentos.get(i).chequear();
             Tipo tipoParametro = m.obtenerParametros().get(i).obtenerTipo();
@@ -94,6 +96,22 @@ public class NodoLlamadaMetodoEstatico extends NodoExpresion{
             }
         }
 
-        return m.obtenerTipoRetorno();
+        Tipo tipoBase = m.obtenerTipoRetorno();
+
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            return encadenado.chequear(tipoBase);
+        }
+
+        return tipoBase;
     }
+
+    public void setEncadenado(NodoEncadenado e) {
+        this.encadenado = e;
+    }
+
+    public NodoEncadenado getEncadenado() {
+        return encadenado;
+    }
+
+    public Token obtenerValor(){ return metodo; }
 }

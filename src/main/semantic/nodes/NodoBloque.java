@@ -1,7 +1,11 @@
 package main.semantic.nodes;
 
+import main.semantic.symboltable.Unidad;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static main.Main.tablaSimbolos;
 
 public class NodoBloque extends NodoSentencia{
     List<NodoSentencia> sentencias;
@@ -16,9 +20,12 @@ public class NodoBloque extends NodoSentencia{
 
     @Override
     public void chequear() {
+        Unidad unidadActual = tablaSimbolos.obtenerUnidadActual();
+        unidadActual.abrirAmbito();
         for(NodoSentencia s: sentencias){
             s.chequear();
         }
+        unidadActual.cerrarAmbito();
     }
 
     public void agregarSentencia(NodoSentencia sent) {

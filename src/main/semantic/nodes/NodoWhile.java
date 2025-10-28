@@ -24,6 +24,7 @@ public class NodoWhile extends NodoSentencia{
     public void chequear() {
         if(!condicion.chequear().esCompatible(new TipoBool(null)))
             throw new SemanticException(SemanticTwoErrorMessages.WHILE_COND_NO_BOOL(condicion));
+        sentencia.chequear();
     }
 
     @Override

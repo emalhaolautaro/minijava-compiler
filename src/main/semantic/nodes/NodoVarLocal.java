@@ -1,8 +1,12 @@
 package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
+import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.semantic.symboltable.Tipo;
+import main.utils.PalabraReservada;
 import main.utils.Token;
+
+import static main.Main.tablaSimbolos;
 
 public class NodoVarLocal extends NodoSentencia{
     private Token var;
@@ -26,6 +30,20 @@ public class NodoVarLocal extends NodoSentencia{
 
     public void chequear() throws SemanticException {
         this.tipoVar = expresionAsignada.chequear();
+
+        if(tipoVar instanceof TipoVoid){
+            throw new SemanticException(SemanticTwoErrorMessages.VAR_TIPO_VOID(var));
+        }
+
+        if(tipoVar instanceof TipoNull){
+            throw new SemanticException(SemanticTwoErrorMessages.VAR_TIPO_NULL(var));
+        }
+
+        if(PalabraReservada.esPalabraReservada(var.obtenerLexema())){
+            throw new SemanticException(SemanticTwoErrorMessages.VAR_LOCAL_NOMBRE_INVALIDO(var));
+        }
+
+        tablaSimbolos.obtenerUnidadActual().agregarVariableLocal(this);
     }
 
     @Override

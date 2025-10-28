@@ -16,7 +16,7 @@ public class NodoExpresionBinaria extends NodoExpresion{
         this.expDer = expDer;
     }
 
-    public Token obtenerOperador(){
+    public Token obtenerValor(){
         return opBin;
     }
 
@@ -40,11 +40,6 @@ public class NodoExpresionBinaria extends NodoExpresion{
         Tipo expresionIzquierda = expIzq.chequear();
         Tipo expresionDerecha = expDer.chequear();
 
-        System.out.println(
-                "Chequeando operador " + opBin.obtenerLexema() +
-                        " con tipos: " + expresionIzquierda.getClass().getSimpleName() +
-                        " y " + expresionDerecha.getClass().getSimpleName());
-
         if(opBin.obtenerTipo().equals("OrCortocircuito") || opBin.obtenerTipo().equals("AndCortocircuito")){
             if(expresionIzquierda instanceof TipoBool && expresionDerecha instanceof TipoBool)
                 return new TipoBool(opBin);
@@ -57,7 +52,7 @@ public class NodoExpresionBinaria extends NodoExpresion{
                 throw new SemanticException(SemanticTwoErrorMessages.TIPOS_INCOMPATIBLES_EXPRESION(expresionIzquierda.obtenerNombre().obtenerLexema(), expresionDerecha.obtenerNombre().obtenerLexema(), opBin.obtenerLexema(), opBin));
         }
         else if(opBin.obtenerTipo().equals("IgualIgual") || opBin.obtenerTipo().equals("NotIgual")){
-            if(expresionIzquierda.esCompatible(expresionDerecha))
+            if(expresionIzquierda.esCompatible(expresionDerecha) && expresionDerecha.esCompatible(expresionIzquierda))
                 return new TipoBool(opBin);
             else
                 throw new SemanticException(SemanticTwoErrorMessages.TIPOS_INCOMPATIBLES_EXPRESION(expresionIzquierda.obtenerNombre().obtenerLexema(), expresionDerecha.obtenerNombre().obtenerLexema(), opBin.obtenerLexema(), opBin));

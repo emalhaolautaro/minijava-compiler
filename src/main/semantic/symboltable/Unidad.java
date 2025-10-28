@@ -8,15 +8,20 @@ import main.utils.Token;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 public abstract class Unidad extends Elemento{
     private List<Parametro> parametros;
+    private Stack<Map<String, NodoVarLocal>> ambitosLocales;
     private List<NodoVarLocal> variablesLocales;
 
 
     public Unidad(Token nombre){
         super(nombre);
         parametros = new ArrayList<>();
+        ambitosLocales = new Stack<>();
         variablesLocales = new ArrayList<>();
     }
 
@@ -41,6 +46,16 @@ public abstract class Unidad extends Elemento{
         return null;
     }
 
+    public void abrirAmbito() {
+        ambitosLocales.push(new HashMap<>());
+    }
+
+    public void cerrarAmbito() {
+        if (!ambitosLocales.isEmpty()) {
+            ambitosLocales.pop();
+        }
+    }
+
     public Tipo obtenerTipoRetorno(){
         return null;
     }
@@ -48,9 +63,9 @@ public abstract class Unidad extends Elemento{
     public List<NodoVarLocal> obtenerVariablesLocales(){ return variablesLocales; }
 
     public NodoVarLocal obtenerVariableLocal(String nombre) {
-        for(NodoVarLocal varLocal : variablesLocales){
-            if(varLocal.obtenerVar().obtenerLexema().equals(nombre)){
-                return varLocal;
+        for (int i = ambitosLocales.size() - 1; i >= 0; i--) {
+            if (ambitosLocales.get(i).containsKey(nombre)) {
+                return ambitosLocales.get(i).get(nombre);
             }
         }
         return null;
@@ -62,8 +77,8 @@ public abstract class Unidad extends Elemento{
     public void consolidar(TablaSimbolos ts) throws SemanticException{}
 
     public boolean existeVariableLocal(String nombre) {
-        for(NodoVarLocal varLocal : variablesLocales){
-            if(varLocal.obtenerVar().obtenerLexema().equals(nombre)){
+        for (int i = ambitosLocales.size() - 1; i >= 0; i--) {
+            if (ambitosLocales.get(i).containsKey(nombre)) {
                 return true;
             }
         }
@@ -80,10 +95,16 @@ public abstract class Unidad extends Elemento{
     }
 
     public void agregarVariableLocal(NodoVarLocal varLocal) {
-        if(existeVariableLocal(varLocal.obtenerVar().obtenerLexema()) || existeParametro(varLocal.obtenerVar().obtenerLexema())){
-            // Error: variable local ya declarada
-            throw new SemanticException(SemanticTwoErrorMessages.VAR_LOCAL_EXISTENTE_ERR(nombre));
+        String nombreVar = varLocal.obtenerVar().obtenerLexema();
+
+        if (ambitosLocales.peek().containsKey(nombreVar)) {
+            throw new SemanticException(SemanticTwoErrorMessages.VAR_LOCAL_EXISTENTE_ERR(varLocal.obtenerVar()));
         }
-        variablesLocales.add(varLocal);
+
+        if (this.existeVariableLocal(nombreVar) || this.existeParametro(nombreVar)) {
+            throw new SemanticException(SemanticTwoErrorMessages.VAR_LOCAL_EXISTENTE_ERR(varLocal.obtenerVar()));
+        }
+
+        ambitosLocales.peek().put(nombreVar, varLocal);
     }
 }

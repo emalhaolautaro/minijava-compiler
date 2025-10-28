@@ -1,0 +1,11 @@
+///[SinErrores]
+class A {
+    void metodo() {
+        var i = 0;
+        while (i < 5) {
+            i = i + 1;
+        }
+    }
+
+    static void main(){}
+}

@@ -1,4 +1,4 @@
-///[Error:5|5]
+///[Error:=|5]
 class Main{
     void metodo1(){
         var x = "hola";

@@ -40,13 +40,13 @@ public class SemanticTwoErrorMessages {
     }
 
     public static String RETORNO_NO_COMPATIBLE(NodoExpresion retorno, Tipo tipoMetodo, Tipo tipoRetorno) {
-        String mensaje = "El tipo de retorno '" + tipoRetorno.obtenerNombre().obtenerLexema() + "' no es compatible con el tipo del método '" + tipoMetodo.obtenerNombre().obtenerLexema() + "'.";
+        String mensaje = "El valor de retorno '" + tipoRetorno.obtenerNombre().obtenerLexema() + "' no es compatible con el tipo de retorno '" + tipoMetodo.obtenerNombre().obtenerLexema() + "'.";
         return format(mensaje, retorno.obtenerValor());
     }
 
-    public static String TIPOS_INCOMPATIBLES_ASIGNACION(String tipoIzquierda, Token tipoDerecha) {
+    public static String TIPOS_INCOMPATIBLES_ASIGNACION(String tipoIzquierda, Token tipoDerecha, Token op) {
         String mensaje = "Tipos incompatibles en asignación: no se puede asignar un valor de tipo '" + tipoDerecha.obtenerLexema() + "' a una variable de tipo '" + tipoIzquierda+ "'.";
-        return format(mensaje, tipoDerecha);
+        return format(mensaje, op);
     }
 
     public static String TIPOS_INCOMPATIBLES_EXPRESION(String s, String s1, String s2, Token derecha) {
@@ -132,8 +132,43 @@ public class SemanticTwoErrorMessages {
         return format(mensaje, nombre);
     }
 
-    public static String METODO_EN_TIPO_NO_CLASE(Token nombre, Tipo tipoBase) {
-        String mensaje = "No se puede llamar al método '" + nombre.obtenerLexema() + "' en el tipo '" + tipoBase.obtenerNombre().obtenerLexema() + "' porque no es una clase.";
+    public static String METODO_NO_DECLARADO(Token token) {
+        String mensaje = "El método '" + token.obtenerLexema() + "' no ha sido declarado en esta clase.";
+        return format(mensaje, token);
+    }
+
+    public static String PARAMETROS_INCORRECTOS(Token token) {
+        String mensaje = "Los parámetros proporcionados en la llamada al método '" + token.obtenerLexema() + "' no son compatibles con su definición.";
+        return format(mensaje, token);
+    }
+
+    public static String VAR_TIPO_VOID(Token var) {
+        String mensaje = "La variable local '" + var.obtenerLexema() + "' no puede ser de tipo void.";
+        return format(mensaje, var);
+    }
+
+    public static String TIPO_NO_ES_CLASE(Token id) {
+        String mensaje = "No es posible encadenar '" + id.obtenerLexema() + "' porque el tipo del lado izquierdo no es una clase.";
+        return format(mensaje, id);
+    }
+
+    public static String VAR_LOCAL_NOMBRE_INVALIDO(Token var) {
+        String mensaje = "El nombre de la variable local '" + var.obtenerLexema() + "' es inválido.";
+        return format(mensaje, var);
+    }
+
+    public static String IZQUIERDA_ASIGNACION_NO_VALIDA(Token token, Token op) {
+        String mensaje = "El lado izquierdo de una asignación no es válido. Se esperaba una variable o un atributo, pero se encontró: " + token.obtenerLexema();
+        return format(mensaje, op);
+    }
+
+    public static String METODO_DINAMICO_EN_METODO_ESTATICO(Token nombre) {
+        String mensaje = "No se puede llamar al método dinámico '" + nombre.obtenerLexema() + "' desde un método estático.";
         return format(mensaje, nombre);
+    }
+
+    public static String VAR_TIPO_NULL(Token var) {
+        String mensaje = "La variable local '" + var.obtenerLexema() + "' no puede ser de tipo null.";
+        return format(mensaje, var);
     }
 }

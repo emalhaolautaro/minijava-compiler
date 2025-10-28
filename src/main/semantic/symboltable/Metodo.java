@@ -145,11 +145,20 @@ public class Metodo extends Unidad {
     }
 
     public void chequearSentencias() {
+        this.abrirAmbito();
         bloque.chequear();
+        this.cerrarAmbito();
     }
 
     public void imprimirAST(int nivel) {
         System.out.println("- ".repeat(nivel) + "Metodo: " + nombre.obtenerLexema());
+        if (!obtenerParametros().isEmpty()) {
+            System.out.println("- ".repeat(nivel + 1) + "Parametros:");
+            for (Parametro p : obtenerParametros()) {
+                // Asumo que Parametro tiene un imprimirAST o un toString()
+                p.imprimirAST(nivel + 2);
+            }
+        }
         if (bloque != null) {
             bloque.imprimirAST(nivel + 1);
         }

@@ -16,31 +16,46 @@ public class TipoClase extends Tipo {
     }
 
     public boolean esCompatible(Tipo otroTipo) {
-        // dos tipos de clase son compatibles si tienen el mismo nombre.
-        if (otroTipo instanceof TipoClase) {
-            TipoClase otroTipoClase = (TipoClase) otroTipo;
-            if(this.obtenerNombreClase().equals(otroTipoClase.obtenerNombreClase()) ||
-            otroTipoClase.heredaDe(this.obtenerNombreClase()))
-                return true;
+        if (!(otroTipo instanceof TipoClase)) {
+            return false;
         }
+
+        TipoClase otroTipoClase = (TipoClase) otroTipo;
+        String esteNombre = this.obtenerNombreClase();
+        String otroNombre = otroTipoClase.obtenerNombreClase();
+
+        if (esteNombre.equals(otroNombre)) {
+            return true;
+        }
+
+        if (this.heredaDe(otroNombre)) {
+            return true;
+        }
+
         return false;
     }
 
-    private boolean heredaDe(String s) {
-        // Verificar si esta clase hereda de la clase con nombre s
-        // Aquí se debería implementar la lógica para verificar la herencia en la tabla de símbolos
+    public boolean heredaDe(String s) {
         if(tablaSimbolos.existeClase(this.obtenerNombreClase())) {
             Clase claseActual = tablaSimbolos.obtenerClasePorNombre(this.obtenerNombreClase());
-            String clasePadre = claseActual.obtenerPadre().obtenerLexema();
-            while (clasePadre != null) {
+            Token tokenPadre = claseActual.obtenerPadre();
+
+            while (tokenPadre != null) {
+                String clasePadre = tokenPadre.obtenerLexema();
+
                 if (clasePadre.equals(s)) {
                     return true;
                 }
-                if(tablaSimbolos.existeClase(clasePadre)) {
-                    claseActual = tablaSimbolos.obtenerClasePorNombre(clasePadre);
-                    clasePadre = claseActual.obtenerPadre().obtenerLexema();
-                } else {
+
+                if (clasePadre.equals("Object")) {
                     break;
+                }
+
+                if (tablaSimbolos.existeClase(clasePadre)) {
+                    claseActual = tablaSimbolos.obtenerClasePorNombre(clasePadre);
+                    tokenPadre = claseActual.obtenerPadre();
+                } else {
+                    tokenPadre = null;
                 }
             }
         }

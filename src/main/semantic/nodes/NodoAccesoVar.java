@@ -11,14 +11,25 @@ import main.utils.Token;
 import static main.Main.tablaSimbolos;
 
 public class NodoAccesoVar extends NodoExpresion{
-
+    private NodoEncadenado encadenado;
 
     public NodoAccesoVar(Token id){
         super(id);
     }
 
+    public void setEncadenado(NodoEncadenado encadenado) {
+        this.encadenado = encadenado;
+    }
+
+    public NodoEncadenado obtenerEncadenado() {
+        return encadenado;
+    }
+
     public void imprimirAST(int nivel){
         System.out.println("- ".repeat(nivel) + "NodoAccesoVar: " + obtenerValor().obtenerLexema());
+        if(encadenado != null){
+            encadenado.imprimirAST(nivel + 1);
+        }
     }
 
     @Override
@@ -27,26 +38,26 @@ public class NodoAccesoVar extends NodoExpresion{
         Clase claseActual = tablaSimbolos.obtenerClaseActual();
         String nombreVar = obtenerValor().obtenerLexema();
 
-        System.out.println("[DEBUG] AccesoVar '" + nombreVar + "' en clase: "
-                + claseActual.obtenerNombre().obtenerLexema());
+        Tipo tipoBase;
 
         if (unidadActual.existeVariableLocal(nombreVar)) {
-            return unidadActual.obtenerVariableLocal(nombreVar).obtenerTipo();
-        }
-        if (unidadActual.existeParametro(nombreVar)) {
-            return unidadActual.obtenerParametro(nombreVar).obtenerTipo();
-        }
-        if (claseActual.existeAtributo(nombreVar)) {
-            if (unidadActual instanceof Metodo) {
-                Metodo metodoActual = (Metodo) unidadActual;
-                if (metodoActual.esStatic()) {
-                    throw new SemanticException(SemanticTwoErrorMessages.ACCESO_ATRIBUTO_NO_STATIC_DESDE_METODO_STATIC(obtenerValor()));
-                }
+            tipoBase = unidadActual.obtenerVariableLocal(nombreVar).obtenerTipo();
+        } else if (unidadActual.existeParametro(nombreVar)) {
+            tipoBase = unidadActual.obtenerParametro(nombreVar).obtenerTipo();
+        } else if (claseActual.existeAtributo(nombreVar)) {
+            if (unidadActual instanceof Metodo && ((Metodo) unidadActual).esStatic()) {
+                throw new SemanticException(SemanticTwoErrorMessages.ACCESO_ATRIBUTO_NO_STATIC_DESDE_METODO_STATIC(obtenerValor()));
             }
-            return claseActual.obtenerAtributo(nombreVar).obtenerTipo();
+            tipoBase = claseActual.obtenerAtributo(nombreVar).obtenerTipo();
+        } else {
+            throw new SemanticException(SemanticTwoErrorMessages.VARIABLE_NO_DECLARADA(obtenerValor()));
         }
 
-        // Error: variable no declarada
-        throw new SemanticException(SemanticTwoErrorMessages.VARIABLE_NO_DECLARADA(obtenerValor()));
+        // Propagar al encadenado si existe
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            return encadenado.chequear(tipoBase); // Pasamos el tipo base al encadenado
+        }
+
+        return tipoBase; // No hay encadenado, devolvemos el tipo de la variable
     }
 }
