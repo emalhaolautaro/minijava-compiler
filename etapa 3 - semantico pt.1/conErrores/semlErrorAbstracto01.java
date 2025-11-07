@@ -1,0 +1,5 @@
+///[Error:B|3]
+class A {}
+abstract class B extends A {}
+
+class Init { static void main() {} }

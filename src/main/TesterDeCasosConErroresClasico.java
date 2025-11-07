@@ -13,14 +13,14 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class TesterDeCasosConErrores {
+public class TesterDeCasosConErroresClasico {
     
     //TODO: el tipo de esta variable init tiene que ser la clase que tiene el main
     private static final Main init = null;
     
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
-    private static final String testFilesDirectoryPath = "resources/conErrores/";
+    private static final String testFilesDirectoryPath = "etapa 4 - semantico pt.2/conErrores/";
     private boolean fullCompilerOuputPrintingInEachTest = true;
      
     @Before
@@ -46,7 +46,7 @@ public class TesterDeCasosConErrores {
     
     private String input;
     
-    public TesterDeCasosConErrores(String input){
+    public TesterDeCasosConErroresClasico(String input){
         this.input = input;
     }
        
