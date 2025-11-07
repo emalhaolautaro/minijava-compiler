@@ -49,6 +49,7 @@ public class NodoAsignacion extends NodoExpresion{
     }
 
     private boolean esDestinoValido(NodoExpresion izquierda) {
+
         if (izquierda instanceof NodoAccesoVar) {
             NodoAccesoVar acceso = (NodoAccesoVar) izquierda;
             NodoEncadenado enc = acceso.obtenerEncadenado();
@@ -68,6 +69,34 @@ public class NodoAsignacion extends NodoExpresion{
             } else {
                 return esUltimoEncadenadoUnAtributo(enc);
             }
+        }else if (izquierda instanceof NodoExpresionParentizada) {
+            NodoExpresionParentizada nodoPar = (NodoExpresionParentizada) izquierda;
+
+            // Si tiene encadenado, verificamos si termina en atributo
+            if (nodoPar.obtenerEncadenado() != null && !(nodoPar.obtenerEncadenado() instanceof NodoEncadenadoVacio)) {
+                return esUltimoEncadenadoUnAtributo(nodoPar.obtenerEncadenado());
+            }
+
+            // Sino, miramos lo que hay dentro
+            return esDestinoValido(nodoPar.getExpresion());
+        } else if (izquierda instanceof NodoLlamadaMetodo) {
+            NodoLlamadaMetodo llamada = (NodoLlamadaMetodo) izquierda;
+            NodoEncadenado enc = llamada.obtenerEncadenado();
+
+            if (enc != null && !(enc instanceof NodoEncadenadoVacio)) {
+                return esUltimoEncadenadoUnAtributo(enc);
+            }
+
+            return false; // llamada sin encadenado no es asignable
+        } else if (izquierda instanceof NodoLlamadaConstructor) {
+            NodoLlamadaConstructor llamada = (NodoLlamadaConstructor) izquierda;
+            NodoEncadenado enc = llamada.obtenerEncadenado();
+
+            if (enc != null && !(enc instanceof NodoEncadenadoVacio)) {
+                return esUltimoEncadenadoUnAtributo(enc);
+            }
+
+            return false; // "new B()" solo no es asignable
         }
 
         return false;

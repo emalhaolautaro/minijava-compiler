@@ -4,6 +4,8 @@ import main.errorhandling.exceptions.LexicalException;
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.exceptions.SyntacticException;
 import main.errorhandling.messages.ConsoleMessages;
+import main.filemanager.OutputManager;
+import main.filemanager.OutputManagerImpl;
 import main.filemanager.SourceManager;
 import main.filemanager.SourceManagerImpl;
 import main.lexical.AnalizadorLexico;
@@ -15,6 +17,8 @@ import main.utils.Token;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import static jdk.jfr.consumer.EventStream.openFile;
 
 public class Main {
     private static SourceManager sourceManager;
@@ -34,7 +38,10 @@ public class Main {
                 tablaSimbolos.consolidar(tablaSimbolos);
                 // Chequeo de Sentencias
                 tablaSimbolos.chequearSentencias();
+                // Calculo offsets
+                tablaSimbolos.calcularOffset();
 
+                // Imprimir AST
                 tablaSimbolos.imprimirAST();
                 System.out.println("Chequeo semántico completado correctamente.");
                 //System.out.println(tablaSimbolos.toString());
@@ -46,9 +53,34 @@ public class Main {
             //ejecutarAnalizadorSintactico();
             //ejecutarAnalizadorSemantico(tablaSimbolos);
             cerrarArchivo();
-        } else {
+        } else if(args.length == 2){
+            try {
+                String nombreArchivo = args[0];
+                String nombreArchivoSalida = args[1];
+                abrirArchivo(nombreArchivo);
+                analizadorSintactico.inicial();
+                cerrarArchivo();
+                tablaSimbolos.declaracionCorrecta(tablaSimbolos);
+                tablaSimbolos.consolidar(tablaSimbolos);
+                tablaSimbolos.chequearSentencias();
+                tablaSimbolos.calcularOffset();
+                generarCodigo(nombreArchivoSalida);
+                System.out.println("Compilacion exitosa.");
+                System.out.println("[SinErrores]");
+            }
+            catch(Exception e){
+                System.out.println(e.getMessage());
+            }
+        }
+        else {
             System.out.println("Usage: java -jar MiniJavaCompiler.jar <source-file>");
         }
+    }
+
+    private static void generarCodigo(String nombreArchivoSalida) {
+        OutputManager outp = new OutputManagerImpl(nombreArchivoSalida);
+        tablaSimbolos.generar(outp);
+        outp.cerrar();
     }
 
     private static void ejecutarAnalizadorSemantico(TablaSimbolos ts) {

@@ -2,6 +2,7 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Clase;
 import main.semantic.symboltable.Metodo;
 import main.semantic.symboltable.Tipo;
@@ -33,7 +34,7 @@ public class NodoLlamadaMetodo extends NodoExpresion{
     public Token obtenerValor(){ return nombre; }
 
     public void imprimirAST(int nivel){
-        System.out.println("  ".repeat(nivel) + "LlamadaMetodo: " + nombre.obtenerLexema());
+        System.out.println("- ".repeat(nivel) + "LlamadaMetodo: " + nombre.obtenerLexema());
         for (NodoExpresion argumento : argumentos) {
             argumento.imprimirAST(nivel + 1);
         }
@@ -66,12 +67,6 @@ public class NodoLlamadaMetodo extends NodoExpresion{
             if (!m.esStatic()) {
                 throw new SemanticException(SemanticTwoErrorMessages.METODO_DINAMICO_EN_METODO_ESTATICO(nombre));
             }
-        }
-
-        if (m.esStatic()) {
-            throw new SemanticException(
-                    SemanticTwoErrorMessages.METODO_ESTATICO_INEXISTENTE(nombre)
-            );
         }
 
         if (argumentos.size() != m.obtenerParametros().size()) {
@@ -110,5 +105,9 @@ public class NodoLlamadaMetodo extends NodoExpresion{
 
     public NodoEncadenado obtenerEncadenado() {
         return encadenado;
+    }
+
+    public void generar(OutputManager output, String nombreClase, String nombreMetodo) {
+
     }
 }

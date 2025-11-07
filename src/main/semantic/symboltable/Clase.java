@@ -2,22 +2,30 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
+import main.filemanager.OutputManager;
+import main.semantic.nodes.NodoAtributo;
 import main.semantic.nodes.NodoBloqueNulo;
+import main.semantic.nodes.NodoExpresion;
+import main.utils.Instrucciones;
 import main.utils.Token;
 import main.utils.TokenImpl;
 
 import java.util.*;
 
 import static main.Main.tablaSimbolos;
+import static main.utils.LambdaOrdenamiento.ordenarPorOffset;
 
 public class Clase extends Elemento {
     private Token modificador;
     private Token padre;
     private Map<String, Atributo> atributos;
+    private List<Atributo> listaAtributos;
     private Map<String, Metodo> metodos;
+    private List<Metodo> listaMetodos;
     private Map<String, Constructor> constructores;
     private boolean consolidada = false;
     private boolean esPredefinida = false;
+    private Map<String, NodoAtributo> nodosAtributos;
 
     public Clase(Token modificador, Token nombre, Token padre) {
         super(nombre);
@@ -25,10 +33,13 @@ public class Clase extends Elemento {
         this.padre = padre;
         this.constructores = new HashMap<>();
         this.atributos = new HashMap<>();
+        this.listaAtributos = new ArrayList<>();
         this.metodos = new HashMap<>();
+        this.listaMetodos = new ArrayList<>();
+        this.nodosAtributos = new HashMap<>();
     }
 
-    public void agregarAtributo(Atributo atributo, TablaSimbolos ts) {
+    public void agregarAtributo(Atributo atributo, NodoAtributo at) {
         if (atributos.containsKey(atributo.obtenerNombre().obtenerLexema())) {
             throw new SemanticException(SemanticErrorMessages.ATRIBUTO_REPETIDO(
                     atributo.obtenerNombre(),
@@ -37,7 +48,7 @@ public class Clase extends Elemento {
             ));
         }
         if (padre != null && !padre.obtenerLexema().equals("Object")) {
-            Clase clasePadre = ts.obtenerClasePorNombre(padre.obtenerLexema());
+            Clase clasePadre = tablaSimbolos.obtenerClasePorNombre(padre.obtenerLexema());
             if (clasePadre != null && clasePadre.obtenerAtributos().containsKey(atributo.obtenerNombre().obtenerLexema())) {
                 throw new SemanticException(SemanticErrorMessages.ATRIBUTO_REDEFINIDO(
                         atributo.obtenerNombre(),
@@ -48,6 +59,8 @@ public class Clase extends Elemento {
         }
 
         atributos.put(atributo.obtenerNombre().obtenerLexema(), atributo);
+        listaAtributos.add(atributo);
+        nodosAtributos.put(atributo.obtenerNombre().obtenerLexema(), at);
     }
 
     public void agregarMetodo(Metodo metodo) {
@@ -58,6 +71,7 @@ public class Clase extends Elemento {
                     this.nombre.obtenerLexema()
             ));
         }
+        listaMetodos.add(metodo);
         metodos.put(metodo.obtenerNombre().obtenerLexema(), metodo);
     }
 
@@ -257,6 +271,11 @@ public class Clase extends Elemento {
 
     public void imprimirAST() {
         System.out.println("Clase: " + nombre.obtenerLexema());
+
+        for(Atributo a: atributos.values()){
+            a.imprimirAST(1);
+        }
+
         for(Constructor c: constructores.values()){
             c.imprimirAST(1);
         }
@@ -268,6 +287,139 @@ public class Clase extends Elemento {
 
     public boolean existeMetodo(String s) {
         return metodos.containsKey(s);
+    }
+
+    public void calcularOffset() {
+        calcularOffsetAtributos();
+        calcularOffsetMetodos();
+    }
+
+    private void calcularOffsetMetodos() {
+        for (Clase c : tablaSimbolos.obtenerClasesOrdenadas()) {
+            int offsetActual = -1;
+            Map<String, Metodo> metodosPadre = new LinkedHashMap<>();
+
+            Token tokenPadre = c.obtenerPadre();
+            if (tokenPadre != null) {
+                Clase clasePadre = tablaSimbolos.obtenerClasePorNombre(tokenPadre.obtenerLexema());
+                if (clasePadre != null) {
+                    for (Metodo mPadre : clasePadre.listaMetodos) {
+                        if (!mPadre.esStatic() && !mPadre.esPredefinido()) {
+                            metodosPadre.put(mPadre.obtenerNombre().obtenerLexema(), mPadre);
+                        }
+                    }
+                    offsetActual = clasePadre.obtenerUltimoOffsetMetodos() + 1;
+                }
+            }
+
+            for (Metodo m : c.listaMetodos) {
+                if (m.esStatic() || m.esPredefinido()) {
+                    m.setOffset(-1);
+                    continue;
+                }
+
+                String nombre = m.obtenerNombre().obtenerLexema();
+                if (metodosPadre.containsKey(nombre)) {
+                    // redefinición: hereda el offset del padre
+                    int offsetPadre = metodosPadre.get(nombre).obtenerOffset();
+                    m.setOffset(offsetPadre);
+                } else {
+                    m.setOffset(offsetActual++);
+                }
+            }
+        }
+    }
+
+    private int obtenerUltimoOffsetMetodos() {
+        int maxOffset = -1;
+        for (Metodo m : listaMetodos) {
+            if (!m.esStatic() && !m.esPredefinido() && m.obtenerOffset() > maxOffset) {
+                maxOffset = m.obtenerOffset();
+            }
+        }
+        return maxOffset;
+    }
+
+
+    private void calcularOffsetAtributos() {
+        for (Clase c : tablaSimbolos.obtenerClasesOrdenadas()) {
+            int offsetActual = 0;
+            Token tokenPadre = c.obtenerPadre();
+            if (tokenPadre != null) {
+                Clase clasePadre = tablaSimbolos.obtenerClasePorNombre(tokenPadre.obtenerLexema());
+                if (clasePadre != null) {
+                    offsetActual = clasePadre.obtenerUltimoOffsetAtributos() + 1;
+                }
+            }
+
+            for (Atributo a : c.listaAtributos) {
+                if (a.esStatic()){
+                    a.setOffset(-1);
+                    continue; // ignorar atributos estáticos
+                }
+                a.setOffset(offsetActual++);
+            }
+        }
+    }
+
+    private int obtenerUltimoOffsetAtributos() {
+        int maxOffset = 0;
+
+        if (padre != null) {
+            Clase clasePadre = tablaSimbolos.obtenerClasePorNombre(padre.obtenerLexema());
+            if (clasePadre != null) {
+                maxOffset = clasePadre.obtenerUltimoOffsetAtributos();
+            }
+        }
+
+        for (Atributo a : listaAtributos) {
+            if (!a.esStatic() && a.obtenerOffset() > maxOffset) {
+                maxOffset = a.obtenerOffset();
+            }
+        }
+
+        return maxOffset;
+    }
+
+    public void generar(OutputManager output) {
+        ordenarPorOffset(listaAtributos);
+        ordenarPorOffset(listaMetodos);
+
+        //Traduccion
+        output.generar(".DATA");
+
+        if(listaMetodos.isEmpty()){
+            output.generar("VT_" + nombre.obtenerLexema() + ": " + Instrucciones.NOP);
+        }
+        else{
+            String primerMet = listaMetodos.getFirst().obtenerNombre().obtenerLexema();
+            output.generar("VT_" + nombre.obtenerLexema() + ": " + Instrucciones.DW + " lbl_" + primerMet + "_" + nombre.obtenerLexema());
+            for(int i = 1; i < listaMetodos.size(); i++){
+                String nombreMetodo = listaMetodos.get(i).obtenerNombre().obtenerLexema();
+                output.generar(Instrucciones.DW + " lbl_" + nombreMetodo + "_" + nombre.obtenerLexema());
+            }
+        }
+
+        output.generar("");
+
+        output.generar(".CODE");
+
+        for (Constructor c: constructores.values()){
+            c.generar(output, nombre.obtenerLexema());
+        }
+
+        /*
+        for (Atributo a: listaAtributos){
+            a.generar(output, nombre.obtenerLexema());
+        }
+         */
+
+        for (Metodo m: listaMetodos){
+            m.generar(output, nombre.obtenerLexema());
+        }
+
+
+        output.generar("");
     }
 
     // Estado para DFS
@@ -284,6 +436,10 @@ public class Clase extends Elemento {
                 tablaSimbolos.setUnidadActual(m);
                 m.chequearSentencias();
             }
+        }
+
+        for (NodoAtributo a : nodosAtributos.values()) {
+            a.chequear();
         }
     }
 
@@ -307,7 +463,6 @@ public class Clase extends Elemento {
                     atributos.put(nombreAtrib, a); // heredamos
                     System.out.println(">> " + this.nombre.obtenerLexema() + " hereda atributo " + nombreAtrib);
                 }
-                // NO lanzamos error si ya existe, eso se chequea al agregar el atributo explícitamente
             }
 
             // Heredar métodos
@@ -349,7 +504,6 @@ public class Clase extends Elemento {
                 }
             }
 
-            // Después de heredar, verificamos si quedaron métodos abstractos sin implementar en una clase concreta.
             if (!esAbstracta()) {
                 for (Metodo metodoHeredado : metodos.values()) {
                     if (metodoHeredado.esAbstracto()) {
@@ -386,7 +540,6 @@ public class Clase extends Elemento {
         this.esPredefinida = true;
     }
 
-    // Dentro de tu clase Clase
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

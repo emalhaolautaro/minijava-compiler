@@ -2,8 +2,10 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.nodes.NodoBloque;
 import main.semantic.nodes.NodoExpresion;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 import java.util.ArrayList;
@@ -116,5 +118,13 @@ public class Constructor extends Unidad {
         }
 
         return true;
+    }
+
+
+    @Override
+    public void generar(OutputManager output, String nombreClase) {
+        String nombreCons;
+        nombreCons = "builder_" + nombreClase;
+        output.generar("lbl_"+nombreCons+": "+ Instrucciones.NOP);
     }
 }

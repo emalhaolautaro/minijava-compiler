@@ -260,9 +260,10 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
     private NodoSentencia _return() {
         if(ts.obtenerUnidadActual() instanceof Constructor)
             throw new SemanticException(SemanticTwoErrorMessages.CONSTRUCTOR_RETURN_ERR(tokenActual, sourceManager));
+        Token r = tokenActual;
         match("return");
         NodoExpresion exp = expresionOpcional();
-        return new NodoReturn(exp, ts.obtenerUnidadActual().obtenerTipoRetorno());
+        return new NodoReturn(exp, ts.obtenerUnidadActual().obtenerTipoRetorno(), r);
     }
 
     private NodoExpresion expresionOpcional() {
@@ -743,14 +744,20 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
         3. Un '(' para declarar un método.*/
         if (tipo.equals("Igual")) { // Atributo con inicialización
             Atributo nuevoAtributo = new Atributo(nombre, tipoAM, null);
-            ts.obtenerClaseActual().agregarAtributo(nuevoAtributo, ts);
+
 
             match("Igual");
-            expresion();
+            NodoExpresion expAtributo = expresion();
             match("PuntoYComa");
+
+            NodoAtributo atributo = new NodoAtributo(nombre, tipoAM, expAtributo);
+            ts.obtenerClaseActual().agregarAtributo(nuevoAtributo, atributo);
+
         } else if(tipo.equals("PuntoYComa")){ // Atributo sin inicialización
             Atributo nuevoAtributo = new Atributo(nombre, tipoAM, null);
-            ts.obtenerClaseActual().agregarAtributo(nuevoAtributo, ts);
+            NodoAtributo atributo = new NodoAtributo(nombre, tipoAM, new NodoExpresionVacia());
+            ts.obtenerClaseActual().agregarAtributo(nuevoAtributo, atributo);
+
 
             match("PuntoYComa");
         } else if(tipo.equals("ParentesisIzq")){ // Es un método

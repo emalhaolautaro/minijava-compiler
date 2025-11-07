@@ -1,5 +1,6 @@
 package main.semantic.nodes;
 
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Unidad;
 
 import java.util.ArrayList;
@@ -36,6 +37,12 @@ public class NodoBloque extends NodoSentencia{
         System.out.println("- ".repeat(nivel)+"Bloque:");
         for(NodoSentencia s: sentencias){
             s.imprimirAST(nivel + 1);
+        }
+    }
+
+    public void generar(OutputManager output, String nombreClase, String nombreMetodo) {
+        for(NodoSentencia s: sentencias){
+            s.generar(output, nombreClase, nombreMetodo);
         }
     }
 }

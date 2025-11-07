@@ -1,5 +1,4 @@
-///[Error:+|8]
-// Variable local duplicada en el metodo m2
+///[SinErrores]
 class A {
     static int metodo(){
         return 3+1;

@@ -171,4 +171,24 @@ public class SemanticTwoErrorMessages {
         String mensaje = "La variable local '" + var.obtenerLexema() + "' no puede ser de tipo null.";
         return format(mensaje, var);
     }
+
+    public static String ENCADENADO_NO_VALIDO(Token token) {
+        String mensaje = "El tipo de expresión en el encadenado " + token +" no es válido. Se esperaba acceso a atributo o llamada a método.";
+        return format(mensaje, token);
+    }
+
+    public static String TIPOS_INCOMPATIBLES_ATRIBUTO(Token at, Token exp, Token nombre) {
+        String mensaje = "El tipo de atributo '" + at.obtenerLexema() + "' no es compatible con el valor que se paso en asignacion: " + exp.obtenerLexema();
+        return format(mensaje, nombre);
+    }
+
+    public static String RETURN_NO_VOID_VACIO(Token returnToken) {
+        String mensaje = "El retorno de un metodo que no es void no puede ser vacio";
+        return format(mensaje, returnToken);
+    }
+
+    public static String RETURN_VOID_CON_EXPRESION(Token tokError) {
+        String mensaje = "El metodo void retorna una expresion";
+        return format(mensaje, tokError);
+    }
 }

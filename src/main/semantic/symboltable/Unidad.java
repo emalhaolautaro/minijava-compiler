@@ -3,6 +3,7 @@ package main.semantic.symboltable;
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.nodes.NodoVarLocal;
 import main.utils.Token;
 
@@ -107,4 +108,6 @@ public abstract class Unidad extends Elemento{
 
         ambitosLocales.peek().put(nombreVar, varLocal);
     }
+
+    public abstract void generar(OutputManager output, String nombreClase);
 }

@@ -2,8 +2,11 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.nodes.NodoBloque;
 import main.semantic.nodes.NodoBloqueNulo;
+import main.utils.ElementoConOffset;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 import java.util.ArrayList;
@@ -11,13 +14,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Metodo extends Unidad {
+public class Metodo extends Unidad implements ElementoConOffset {
     private Token modificador;
     private Tipo tipoRetorno;
     private boolean tieneCuerpo = false;
     private boolean esPredefinido = false;
     private Clase pertenece;
     private NodoBloque bloque;
+    private int Offset;
 
     public boolean esPredefinido() {
         return esPredefinido;
@@ -152,15 +156,31 @@ public class Metodo extends Unidad {
 
     public void imprimirAST(int nivel) {
         System.out.println("- ".repeat(nivel) + "Metodo: " + nombre.obtenerLexema());
+        System.out.println("- ".repeat(nivel + nivel) + "Offset: " + Offset);
         if (!obtenerParametros().isEmpty()) {
             System.out.println("- ".repeat(nivel + 1) + "Parametros:");
             for (Parametro p : obtenerParametros()) {
-                // Asumo que Parametro tiene un imprimirAST o un toString()
                 p.imprimirAST(nivel + 2);
             }
         }
         if (bloque != null) {
             bloque.imprimirAST(nivel + 1);
         }
+    }
+
+    public void setOffset(int i){
+        Offset = i;
+    }
+
+    public int obtenerOffset() {
+        return Offset;
+    }
+
+    @Override
+    public void generar(OutputManager output, String nombreClase) {
+        String nombreMetodo;
+        nombreMetodo = nombre.obtenerLexema() + "_" + nombreClase;
+        output.generar("lbl_" + nombreMetodo + ": " + Instrucciones.NOP);
+        output.generar("");
     }
 }

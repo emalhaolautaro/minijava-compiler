@@ -53,11 +53,10 @@ public class NodoAccesoVar extends NodoExpresion{
             throw new SemanticException(SemanticTwoErrorMessages.VARIABLE_NO_DECLARADA(obtenerValor()));
         }
 
-        // Propagar al encadenado si existe
         if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
-            return encadenado.chequear(tipoBase); // Pasamos el tipo base al encadenado
+            return encadenado.chequear(tipoBase);
         }
 
-        return tipoBase; // No hay encadenado, devolvemos el tipo de la variable
+        return tipoBase;
     }
 }

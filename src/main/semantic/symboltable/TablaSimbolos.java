@@ -2,6 +2,8 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
+import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.nodes.*;
 import main.utils.Token;
 import main.utils.TokenImpl;
@@ -14,7 +16,7 @@ public class TablaSimbolos extends Elemento {
     private Clase claseActual;
     private Unidad unidadActual;
 
-    public TablaSimbolos(){
+    public TablaSimbolos() {
         resetearTabla();
     }
 
@@ -26,9 +28,9 @@ public class TablaSimbolos extends Elemento {
     }
 
     public void agregarClase(Token nombre, Clase nuevaClase) {
-        if(existeClase(nombre.obtenerLexema())){
+        if (existeClase(nombre.obtenerLexema())) {
             throw new SemanticException(SemanticErrorMessages.CLASE_REPETIDA(nombre, nombre.obtenerLexema()));
-        }else{
+        } else {
             clases.put(nombre, nuevaClase);
             clasesOrdenadas.add(nuevaClase);
         }
@@ -38,23 +40,23 @@ public class TablaSimbolos extends Elemento {
         claseActual = nuevaClase;
     }
 
-    public void setUnidadActual(Unidad nuevaUnidad){
+    public void setUnidadActual(Unidad nuevaUnidad) {
         unidadActual = nuevaUnidad;
     }
 
-    public Clase obtenerClaseActual(){
+    public Clase obtenerClaseActual() {
         return claseActual;
     }
 
-    public Unidad obtenerUnidadActual(){
+    public Unidad obtenerUnidadActual() {
         return unidadActual;
     }
 
-    public List<Clase> obtenerClasesOrdenadas(){
+    public List<Clase> obtenerClasesOrdenadas() {
         return clasesOrdenadas;
     }
 
-    public Map<Token, Clase> obtenerTablaSimbolos(){
+    public Map<Token, Clase> obtenerTablaSimbolos() {
         return clases;
     }
 
@@ -75,9 +77,9 @@ public class TablaSimbolos extends Elemento {
         //Crear constructor
         Constructor cons = new Constructor(nombreClase, new TokenImpl("public", "public", -1));
         cons.agregarBloque(new NodoBloqueNulo());
-        try{
+        try {
             system.agregarConstructor(cons);
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -90,6 +92,7 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoRetornoRead = new TipoInt(new TokenImpl(null, "int", -1));
         Metodo read = new Metodo(modificadorStatic, tipoRetornoRead, metodoRead);
         read.marcarComoPredefinido();
+        read.setOffset(-1);
         read.setearClase(system);
 
         //Crear metodo printB(boolean b)
@@ -98,10 +101,11 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoParametroPrintB = new TipoBool(new TokenImpl(null, "boolean", -1));
         Metodo printB = new Metodo(modificadorStatic, tipoRetornoPrintB, metodoPrintB);
         printB.marcarComoPredefinido();
+        printB.setOffset(-1);
         printB.setearClase(system);
-        try{
+        try {
             printB.agregarParametro(new Parametro(tipoParametroPrintB, new TokenImpl(null, "b", -1)));
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -112,10 +116,11 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoParametroPrintC = new TipoChar(new TokenImpl(null, "char", -1));
         Metodo printC = new Metodo(modificadorStatic, tipoRetornoPrintC, metodoPrintC);
         printC.marcarComoPredefinido();
+        printC.setOffset(-1);
         printC.setearClase(system);
-        try{
+        try {
             printC.agregarParametro(new Parametro(tipoParametroPrintC, new TokenImpl(null, "c", -1)));
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -126,10 +131,11 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoParametroPrintI = new TipoInt(new TokenImpl("int", "int", -1));
         Metodo printI = new Metodo(modificadorStatic, tipoRetornoPrintI, metodoPrintI);
         printI.marcarComoPredefinido();
+        printI.setOffset(-1);
         printI.setearClase(system);
-        try{
+        try {
             printI.agregarParametro(new Parametro(tipoParametroPrintI, new TokenImpl(null, "i", -1)));
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -140,10 +146,11 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoParametroPrintS = new TipoClase(new TokenImpl("String", "String", -1));
         Metodo printS = new Metodo(modificadorStatic, tipoRetornoPrintS, metodoPrintS);
         printS.marcarComoPredefinido();
+        printS.setOffset(-1);
         printS.setearClase(system);
-        try{
+        try {
             printS.agregarParametro(new Parametro(tipoParametroPrintS, new TokenImpl(null, "s", -1)));
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -153,6 +160,7 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoRetornoPrintln = new TipoVoid(new TokenImpl("void", "void", -1));
         Metodo println = new Metodo(modificadorStatic, tipoRetornoPrintln, metodoPrintln);
         println.marcarComoPredefinido();
+        println.setOffset(-1);
         println.setearClase(system);
 
         //Crear metodo printBln(boolean b)
@@ -161,10 +169,11 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoParametroPrintBln = new TipoBool(new TokenImpl("boolean", "boolean", -1));
         Metodo printBln = new Metodo(modificadorStatic, tipoRetornoPrintBln, metodoPrintBln);
         printBln.marcarComoPredefinido();
+        printBln.setOffset(-1);
         printBln.setearClase(system);
-        try{
+        try {
             printBln.agregarParametro(new Parametro(tipoParametroPrintBln, new TokenImpl(null, "b", -1)));
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -175,10 +184,11 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoParametroPrintCln = new TipoChar(new TokenImpl("char", "char", -1));
         Metodo printCln = new Metodo(modificadorStatic, tipoRetornoPrintCln, metodoPrintCln);
         printCln.marcarComoPredefinido();
+        printCln.setOffset(-1);
         printCln.setearClase(system);
-        try{
+        try {
             printCln.agregarParametro(new Parametro(tipoParametroPrintCln, new TokenImpl(null, "c", -1)));
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -189,10 +199,11 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoParametroPrintIln = new TipoInt(new TokenImpl("int", "int", -1));
         Metodo printIln = new Metodo(modificadorStatic, tipoRetornoPrintIln, metodoPrintIln);
         printIln.marcarComoPredefinido();
+        printIln.setOffset(-1);
         printIln.setearClase(system);
-        try{
+        try {
             printIln.agregarParametro(new Parametro(tipoParametroPrintIln, new TokenImpl(null, "i", -1)));
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -203,16 +214,17 @@ public class TablaSimbolos extends Elemento {
         Tipo tipoParametroPrintSln = new TipoClase(new TokenImpl("String", "String", -1));
         Metodo printSln = new Metodo(modificadorStatic, tipoRetornoPrintSln, metodoPrintSln);
         printSln.marcarComoPredefinido();
+        printSln.setOffset(-1);
         printSln.setearClase(system);
-        try{
+        try {
             printSln.agregarParametro(new Parametro(tipoParametroPrintSln, new TokenImpl(null, "s", -1)));
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
 
         //Agregar métodos a la clase System
-        try{
+        try {
             system.agregarMetodo(read);
             system.agregarMetodo(printB);
             system.agregarMetodo(printC);
@@ -223,7 +235,7 @@ public class TablaSimbolos extends Elemento {
             system.agregarMetodo(printCln);
             system.agregarMetodo(printIln);
             system.agregarMetodo(printSln);
-        }catch (SemanticException e) {
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -241,9 +253,9 @@ public class TablaSimbolos extends Elemento {
         //Crear constructor
         Constructor cons = new Constructor(nombreClase, new TokenImpl("public", "public", -1));
         cons.agregarBloque(new NodoBloqueNulo());
-        try{
+        try {
             string.agregarConstructor(cons);
-        }catch (SemanticException e){
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -259,25 +271,26 @@ public class TablaSimbolos extends Elemento {
         //Crear constructor
         Constructor cons = new Constructor(nombreClase, new TokenImpl("public", "public", -1));
         cons.agregarBloque(new NodoBloqueNulo());
-        try{
+        try {
             object.agregarConstructor(cons);
-        }catch (SemanticException e){
+        } catch (SemanticException e) {
             // No deberia llegar aca
             e.printStackTrace();
         }
 
         //Crear método static void debugPrint(int i)
         Token metodoNombre = new TokenImpl(null, "debugPrint", -1);
-        Token modificador = new TokenImpl(null, "static", -1);
+        Token modificador = new TokenImpl("static", "static", -1);
         Tipo tipoRetorno = new TipoVoid(new TokenImpl("void", "void", -1));
         Tipo tipoParametro = new TipoInt(new TokenImpl("int", "int", -1));
         Metodo metodo = new Metodo(modificador, tipoRetorno, metodoNombre);
         metodo.marcarComoPredefinido();
+        metodo.setOffset(-1); // No se usa en la generación de código
         metodo.setearClase(object);
-        try{
+        try {
             metodo.agregarParametro(new Parametro(tipoParametro, new TokenImpl(null, "i", -1)));
             object.agregarMetodo(metodo);
-        }catch (SemanticException e){
+        } catch (SemanticException e) {
             // No debería llegar acá
             e.printStackTrace();
         }
@@ -295,7 +308,7 @@ public class TablaSimbolos extends Elemento {
 
     @Override
     public void declaracionCorrecta(TablaSimbolos ts) {
-        for (Clase c: clases.values()) {
+        for (Clase c : clases.values()) {
             c.declaracionCorrecta(this);
         }
         int cantMain = 0;
@@ -329,7 +342,7 @@ public class TablaSimbolos extends Elemento {
 
     @Override
     public void consolidar(TablaSimbolos ts) throws SemanticException {
-        for (Clase c: clases.values()) {
+        for (Clase c : clases.values()) {
             c.consolidar(this);
         }
     }
@@ -367,15 +380,40 @@ public class TablaSimbolos extends Elemento {
     }
 
     public void chequearSentencias() {
-        for (Clase c: clases.values()) {
+        for (Clase c : clases.values()) {
             claseActual = c;
             c.chequearSentencias();
         }
     }
 
-    public void imprimirAST(){
-        for(Clase c: clases.values()){
+    public void imprimirAST() {
+        for (Clase c : clases.values()) {
             c.imprimirAST();
         }
+    }
+
+    public void calcularOffset() {
+        for (Clase c : clases.values()) {
+            c.calcularOffset();
+        }
+    }
+
+    public void generar(OutputManager output) {
+        Metodo metMain = buscarMetodoMain();
+
+        output.generar(".CODE");
+
+
+        for (Clase c : clases.values()) {
+            c.generar(output);
+        }
+    }
+
+    public Metodo buscarMetodoMain() {
+        for (Clase c : clases.values()) {
+            Metodo m = c.obtenerMetodo("main");
+            return m;
+        }
+        throw new SemanticException(SemanticErrorMessages.METODO_MAIN_NO_DECLARADO());
     }
 }

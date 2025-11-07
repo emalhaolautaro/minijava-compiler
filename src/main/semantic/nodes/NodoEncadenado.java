@@ -66,7 +66,6 @@ public class NodoEncadenado {
         Clase claseIzq = tablaSimbolos.obtenerClasePorNombre(((TipoClase) tipoIzquierdo).obtenerNombreClase());
 
         if (izquierda instanceof NodoAccesoVar) {
-            // Acceso a atributo
             if (!claseIzq.existeAtributo(id.obtenerLexema())) {
                 throw new SemanticException(
                         SemanticTwoErrorMessages.VARIABLE_NO_DECLARADA(id));
@@ -75,7 +74,6 @@ public class NodoEncadenado {
             tipoActual = claseIzq.obtenerAtributo(id.obtenerLexema()).obtenerTipo();
 
         } else if (izquierda instanceof NodoLlamadaMetodo) {
-            // Llamada a método
             NodoLlamadaMetodo nodoMetodo = (NodoLlamadaMetodo) izquierda;
 
             if (!claseIzq.existeMetodo(id.obtenerLexema())) {
@@ -85,7 +83,6 @@ public class NodoEncadenado {
 
             Metodo metodo = claseIzq.obtenerMetodo(id.obtenerLexema());
 
-            // Chequeo de cantidad de argumentos
             List<NodoExpresion> argsActuales = nodoMetodo.obtenerArgumentos();
             List<Tipo> parametrosFormales = new ArrayList<>();
             for (Parametro p : metodo.obtenerParametros()) {
@@ -97,7 +94,6 @@ public class NodoEncadenado {
                         SemanticTwoErrorMessages.PARAMETROS_INCORRECTOS(id));
             }
 
-            // Chequeo de compatibilidad de tipos
             for (int i = 0; i < argsActuales.size(); i++) {
                 Tipo tipoArg = argsActuales.get(i).chequear();
                 Tipo tipoFormal = parametrosFormales.get(i);
@@ -111,7 +107,7 @@ public class NodoEncadenado {
             tipoActual = metodo.obtenerTipoRetorno();
 
         } else {
-            throw new SemanticException("Encadenado no válido: " + izquierda);
+            throw new SemanticException(SemanticTwoErrorMessages.ENCADENADO_NO_VALIDO(izquierda.obtenerValor()));
         }
 
         // Guardar el tipo actual
