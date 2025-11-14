@@ -2,6 +2,7 @@ package main.semantic.nodes;
 
 import main.filemanager.OutputManager;
 import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +11,11 @@ import static main.Main.tablaSimbolos;
 
 public class NodoBloque extends NodoSentencia{
     List<NodoSentencia> sentencias;
+    private List<NodoVarLocal> variablesLocales;
 
     public NodoBloque(){
         sentencias = new ArrayList<>();
+        variablesLocales = new ArrayList<>();
     }
 
     public List<NodoSentencia> obtenerSentencias(){
@@ -40,9 +43,9 @@ public class NodoBloque extends NodoSentencia{
         }
     }
 
-    public void generar(OutputManager output, String nombreClase, String nombreMetodo) {
+    public void generar(OutputManager output, Unidad unidadActual) {
         for(NodoSentencia s: sentencias){
-            s.generar(output, nombreClase, nombreMetodo);
+            s.generar(output, unidadActual);
         }
     }
 }

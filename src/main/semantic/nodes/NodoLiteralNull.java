@@ -1,6 +1,8 @@
 package main.semantic.nodes;
 
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
 import main.utils.Token;
 
 public class NodoLiteralNull extends NodoExpresion{
@@ -16,5 +18,10 @@ public class NodoLiteralNull extends NodoExpresion{
     @Override
     public void imprimirAST(int i) {
         System.out.println("- ".repeat(i) + "Literal null");
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual){
+        //TODO: consultar qué hace este literal
     }
 }

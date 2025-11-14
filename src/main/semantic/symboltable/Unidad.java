@@ -4,7 +4,9 @@ import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.filemanager.OutputManager;
+import main.semantic.nodes.NodoLlamadaMetodo;
 import main.semantic.nodes.NodoVarLocal;
+import main.utils.ElementoConOffset;
 import main.utils.Token;
 
 import java.util.ArrayList;
@@ -13,10 +15,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public abstract class Unidad extends Elemento{
+public abstract class Unidad extends Elemento implements ElementoConOffset {
     private List<Parametro> parametros;
     private Stack<Map<String, NodoVarLocal>> ambitosLocales;
     private List<NodoVarLocal> variablesLocales;
+    private int proximoOffsetLocal = 0;
+    private Clase pertenece;
 
 
     public Unidad(Token nombre){
@@ -106,8 +110,47 @@ public abstract class Unidad extends Elemento{
             throw new SemanticException(SemanticTwoErrorMessages.VAR_LOCAL_EXISTENTE_ERR(varLocal.obtenerVar()));
         }
 
+        varLocal.setOffset(this.proximoOffsetLocal);
+        proximoOffsetLocal--; // Decrementar para la próxima variable
+
+        // Agregar a la lista del ámbito actual (para scoping)
         ambitosLocales.peek().put(nombreVar, varLocal);
+
+        // Agregar a la lista total (para RMEM/FMEM)
+        variablesLocales.add(varLocal);
+    }
+
+    public boolean existeVariableLocalEnAmbitosSuperiores(String nombre) {
+        for (int i = ambitosLocales.size() - 2; i >= 0; i--) { // Empieza en size-2 (padre)
+            if (ambitosLocales.get(i).containsKey(nombre)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getCantidadTotalVariablesLocales() {
+        return variablesLocales.size();
     }
 
     public abstract void generar(OutputManager output, String nombreClase);
+
+    public void setearClase(Clase c){
+        pertenece = c;
+    }
+
+    public Clase perteneceAClase(){
+        return pertenece;
+    }
+
+    public void calcularOffsetsParametros() {
+        int offset = esStatic() ? 3 : 4;
+
+        for (Parametro p : obtenerParametros()) {
+            p.setOffset(offset++);
+        }
+    }
+
+    public abstract boolean esStatic();
+
 }

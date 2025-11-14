@@ -3,6 +3,7 @@ package main.semantic.nodes;
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.filemanager.OutputManager;
+import main.semantic.symboltable.Unidad;
 import main.utils.Token;
 
 public class NodoSentenciaExpresion extends NodoSentencia{
@@ -146,7 +147,8 @@ public class NodoSentenciaExpresion extends NodoSentencia{
     }
 
     @Override
-    public void generar(OutputManager output, String nombreClase, String nombreMetodo) {
-        expresion.generar(output, nombreClase, nombreMetodo);
+    public void generar(OutputManager output, Unidad unidadActual) {
+        System.out.println(unidadActual.obtenerNombre().obtenerLexema());
+        expresion.generar(output, unidadActual);
     }
 }

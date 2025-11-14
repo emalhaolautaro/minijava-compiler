@@ -385,18 +385,42 @@ public class Clase extends Elemento {
         ordenarPorOffset(listaAtributos);
         ordenarPorOffset(listaMetodos);
 
-        //Traduccion
+        if (esPredefinida()) {
+            output.generar(".DATA");
+            output.generar("VT@" + nombre.obtenerLexema() + ": " + Instrucciones.NOP);
+            output.generar("");
+
+            output.generar(".CODE");
+            for (Metodo m : listaMetodos) {
+                m.generar(output, nombre.obtenerLexema());
+            }
+
+            output.generar("");
+            return;
+        }
+
+        // Clases normales: generar VT completa
+        List<Metodo> metodosDinamicos = obtenerMetodosDinamicos();
+        List<Metodo> metodosPropios = obtenerMetodosPropios();
+
         output.generar(".DATA");
 
-        if(listaMetodos.isEmpty()){
-            output.generar("VT_" + nombre.obtenerLexema() + ": " + Instrucciones.NOP);
-        }
-        else{
-            String primerMet = listaMetodos.getFirst().obtenerNombre().obtenerLexema();
-            output.generar("VT_" + nombre.obtenerLexema() + ": " + Instrucciones.DW + " lbl_" + primerMet + "_" + nombre.obtenerLexema());
-            for(int i = 1; i < listaMetodos.size(); i++){
-                String nombreMetodo = listaMetodos.get(i).obtenerNombre().obtenerLexema();
-                output.generar(Instrucciones.DW + " lbl_" + nombreMetodo + "_" + nombre.obtenerLexema());
+        if (metodosDinamicos.isEmpty()) {
+            output.generar("VT@" + nombre.obtenerLexema() + ": " + Instrucciones.NOP);
+        } else {
+            for (Metodo m : metodosDinamicos) {
+                String nombreMetodo = m.obtenerNombre().obtenerLexema();
+                // Obtener la clase donde 'm' fue definido (ej. Animal)
+                String nombreClaseMetodo = m.perteneceAClase().obtenerNombre().obtenerLexema();
+
+                String etiquetaMetodo = "lbl_" + nombreMetodo + "@" + nombreClaseMetodo;
+
+                // (El primer DW va separado, los demás con DW solo)
+                if (m.obtenerOffset() == 0) { // Asumiendo que el primero es offset 0
+                    output.generar("VT@" + nombre.obtenerLexema() + ": " + Instrucciones.DW + " " + etiquetaMetodo);
+                } else {
+                    output.generar(Instrucciones.DW + " " + etiquetaMetodo);
+                }
             }
         }
 
@@ -404,22 +428,34 @@ public class Clase extends Elemento {
 
         output.generar(".CODE");
 
-        for (Constructor c: constructores.values()){
+        for (Constructor c : constructores.values()) {
             c.generar(output, nombre.obtenerLexema());
         }
 
-        /*
-        for (Atributo a: listaAtributos){
-            a.generar(output, nombre.obtenerLexema());
-        }
-         */
-
-        for (Metodo m: listaMetodos){
+        for (Metodo m : metodosPropios) {
             m.generar(output, nombre.obtenerLexema());
         }
 
-
         output.generar("");
+    }
+
+
+    private List<Metodo> obtenerMetodosPropios() {
+        List<Metodo> metodosPropios = new ArrayList<>();
+        for(Metodo m: listaMetodos){
+            if(m.perteneceAClase().obtenerNombre().obtenerLexema().equals(obtenerNombre().obtenerLexema()))
+                metodosPropios.add(m);
+        }
+        return metodosPropios;
+    }
+
+    private List<Metodo> obtenerMetodosDinamicos() {
+        List<Metodo> metodosDinamicos = new ArrayList<>();
+        for(Metodo m: listaMetodos){
+            if(!(m.esStatic()))
+                metodosDinamicos.add(m);
+        }
+        return metodosDinamicos;
     }
 
     // Estado para DFS
@@ -461,6 +497,7 @@ public class Clase extends Elemento {
                 String nombreAtrib = a.obtenerNombre().obtenerLexema();
                 if (!atributos.containsKey(nombreAtrib)) {
                     atributos.put(nombreAtrib, a); // heredamos
+                    listaAtributos.add(a);
                     System.out.println(">> " + this.nombre.obtenerLexema() + " hereda atributo " + nombreAtrib);
                 }
             }
@@ -501,6 +538,7 @@ public class Clase extends Elemento {
                     }
                 } else {
                     metodos.put(nombreMetodo, metodoPadre);
+                    listaMetodos.add(metodoPadre);
                 }
             }
 

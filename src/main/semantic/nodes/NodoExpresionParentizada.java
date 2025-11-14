@@ -1,6 +1,8 @@
 package main.semantic.nodes;
 
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
 import main.utils.Token;
 
 public class NodoExpresionParentizada extends NodoExpresion{
@@ -35,6 +37,15 @@ public class NodoExpresionParentizada extends NodoExpresion{
             return encadenado.chequear(tipoBase);
         }
         return tipoBase;
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual){
+        expresion.generar(output, unidadActual);
+
+        if(encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)){
+            //encadenado.generar(output, unidadActual);
+        }
     }
 
     public void setEncadenado(NodoEncadenado e) {

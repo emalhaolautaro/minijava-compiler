@@ -2,6 +2,9 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
+import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 
 public class NodoIf extends NodoSentencia{
     private NodoExpresion condicion;
@@ -40,5 +43,30 @@ public class NodoIf extends NodoSentencia{
         condicion.imprimirAST(nivel + 1);
         sentenciaThen.imprimirAST(nivel + 1);
         sentenciaElse.imprimirAST(nivel + 1);
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual){
+        int id = output.obtenerEIncrementarContIfsWhiles();
+
+        String L_ELSE = "lbl_else" + id;
+        String L_FIN = "lbl_finif" + id;
+
+        // Evalua la condicion y la deja en el tope de la pila
+        condicion.generar(output, unidadActual);
+
+        // Evaluo si existe un else para ver como etiquetar
+        if(!(sentenciaElse instanceof NodoSentenciaVacia)){
+            output.generar(Instrucciones.BF + " " + L_ELSE);
+            sentenciaThen.generar(output, unidadActual);
+            output.generar(Instrucciones.JUMP + " " + L_FIN);
+            output.generar(L_ELSE + ": " + Instrucciones.NOP);
+            sentenciaElse.generar(output, unidadActual);
+            output.generar(L_FIN + ": " + Instrucciones.NOP);
+        }else{
+            output.generar(Instrucciones.BF + " "+ L_FIN);
+            sentenciaThen.generar(output, unidadActual);
+            output.generar(L_FIN + ": " + Instrucciones.NOP);
+        }
     }
 }

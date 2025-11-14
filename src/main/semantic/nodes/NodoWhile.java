@@ -2,6 +2,9 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
+import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 
 public class NodoWhile extends NodoSentencia{
     private NodoExpresion condicion;
@@ -32,5 +35,20 @@ public class NodoWhile extends NodoSentencia{
         System.out.println("- ".repeat(nivel) + "While:");
         condicion.imprimirAST(nivel + 1);
         sentencia.imprimirAST(nivel + 1);
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual){
+        int id = output.obtenerEIncrementarContIfsWhiles();
+
+        String LOOP_INICIO = "lbl_loop_ini" + id;
+        String LOOP_FIN = "lbl_loop_fin" + id;
+
+        output.generar(LOOP_INICIO + ": " + Instrucciones.NOP);
+        condicion.generar(output, unidadActual);
+        output.generar(Instrucciones.BF + " " + LOOP_FIN);
+        sentencia.generar(output, unidadActual);
+        output.generar(Instrucciones.JUMP + " " + LOOP_INICIO);
+        output.generar(LOOP_FIN + ": " + Instrucciones.NOP);
     }
 }

@@ -47,14 +47,6 @@ public class Metodo extends Unidad implements ElementoConOffset {
         return tipoRetorno;
     }
 
-    public void setearClase(Clase c){
-        pertenece = c;
-    }
-
-    public Clase perteneceAClase(){
-        return pertenece;
-    }
-
     public void agregarBloque(NodoBloque b){
         bloque = b;
     }
@@ -77,6 +69,8 @@ public class Metodo extends Unidad implements ElementoConOffset {
             }
             param.put(p.obtenerNombre().obtenerLexema(), p);
         }
+
+        calcularOffsetsParametros();
     }
 
     public boolean mismaFirma(Metodo otro) {
@@ -97,6 +91,7 @@ public class Metodo extends Unidad implements ElementoConOffset {
         return modificador != null && "final".equals(modificador.obtenerLexema());
     }
 
+    @Override
     public boolean esStatic() {
         return modificador != null && "static".equals(modificador.obtenerLexema());
     }
@@ -179,8 +174,32 @@ public class Metodo extends Unidad implements ElementoConOffset {
     @Override
     public void generar(OutputManager output, String nombreClase) {
         String nombreMetodo;
-        nombreMetodo = nombre.obtenerLexema() + "_" + nombreClase;
-        output.generar("lbl_" + nombreMetodo + ": " + Instrucciones.NOP);
-        output.generar("");
+        nombreMetodo = nombre.obtenerLexema() + "@" + nombreClase;
+
+        // 1. Obtener el conteo TOTAL de la Unidad
+        int cantLocales = getCantidadTotalVariablesLocales();
+
+        // 2. Prólogo
+        output.generar("lbl_" + nombreMetodo + ": " + Instrucciones.LOADFP);
+        output.generar(Instrucciones.LOADSP.toString());
+        output.generar(Instrucciones.STOREFP.toString());
+
+        // 3. RMEM (si es necesario)
+        if (cantLocales > 0) {
+            output.generar(Instrucciones.RMEM + " " + cantLocales + " ; Reservar " + cantLocales + " celdas locales");
+        }
+
+        // 4. Cuerpo
+        bloque.generar(output, this);
+
+        output.generar("lbl_end_" + nombreMetodo + ": " + Instrucciones.NOP);
+        // 5. FMEM (si es necesario)
+        if (cantLocales > 0) {
+            output.generar(Instrucciones.FMEM + " " + cantLocales + " ; Liberar celdas locales");
+        }
+
+        // 6. Epílogo
+        output.generar(Instrucciones.STOREFP.toString());
+        output.generar(Instrucciones.RET + " " + (obtenerParametros().size()));
     }
 }

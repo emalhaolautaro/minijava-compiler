@@ -2,7 +2,11 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
+import main.semantic.symboltable.Clase;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 public class NodoAsignacion extends NodoExpresion{
@@ -108,6 +112,21 @@ public class NodoAsignacion extends NodoExpresion{
         }
         NodoExpresion ultimoNodo = enc.obtenerIzquierda();
         return (ultimoNodo instanceof NodoAccesoVar);
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual){
+        derecha.generar(output, unidadActual);
+
+        if (izquierda instanceof NodoAccesoVar var) {
+            var.generarParaAlmacenar(output);
+        }
+        if(izquierda instanceof NodoThis var){
+            var.generarParaAlmacenar(output);
+        }
+
+        if(derecha instanceof NodoLlamadaConstructor)
+            output.generar(Instrucciones.FMEM + " 1" + " ; Liberar slot temporal del 'new'");
     }
 
     @Override

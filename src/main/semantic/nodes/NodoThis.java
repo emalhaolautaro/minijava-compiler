@@ -2,10 +2,12 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Clase;
 import main.semantic.symboltable.Metodo;
 import main.semantic.symboltable.Tipo;
 import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 import static main.Main.tablaSimbolos;
@@ -57,5 +59,14 @@ public class NodoThis extends NodoExpresion{
         }
 
         return tipoThis;
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual) {
+
+    }
+
+    public void generarParaAlmacenar(OutputManager output) {
+
     }
 }

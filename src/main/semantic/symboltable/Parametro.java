@@ -2,10 +2,14 @@ package main.semantic.symboltable;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
+import main.utils.ElementoConOffset;
 import main.utils.Token;
 
-public class Parametro extends Elemento{
+import static main.Main.tablaSimbolos;
+
+public class Parametro extends Elemento implements ElementoConOffset {
     private Tipo tipo;
+    private int Offset;
 
     public Parametro(Tipo tipo, Token nombre) {
         super(nombre);
@@ -59,5 +63,14 @@ public class Parametro extends Elemento{
 
     public void imprimirAST(int i) {
         System.out.println("- ".repeat(i) + "Parametro: " + tipo.obtenerNombre().obtenerLexema() + " " + nombre.obtenerLexema());
+        System.out.println("- ".repeat(i+1) + "Offset: " + Offset);
+    }
+
+    public int obtenerOffset() {
+        return Offset;
+    }
+
+    public void setOffset(int i) {
+        Offset = i;
     }
 }
