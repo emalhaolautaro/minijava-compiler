@@ -2,7 +2,10 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 public class NodoExpresionBinaria extends NodoExpresion{
@@ -96,5 +99,54 @@ public class NodoExpresionBinaria extends NodoExpresion{
         }
 
         return new TipoNull(opBin);
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual){
+        expIzq.generar(output, unidadActual);
+        expDer.generar(output, unidadActual);
+
+        String operador = opBin.obtenerLexema();
+        switch (operador){
+            case "+":
+                output.generar(Instrucciones.ADD.toString());
+                break;
+            case "-":
+                output.generar(Instrucciones.SUB.toString());
+                break;
+            case "*":
+                output.generar(Instrucciones.MUL.toString());
+                break;
+            case "/":
+                output.generar(Instrucciones.DIV.toString());
+                break;
+            case "%":
+                output.generar(Instrucciones.MOD.toString());
+                break;
+            case "||":
+                output.generar(Instrucciones.OR.toString());
+                break;
+            case "&&":
+                output.generar(Instrucciones.AND.toString());
+                break;
+            case "<":
+                output.generar(Instrucciones.LT.toString());
+                break;
+            case "<=":
+                output.generar(Instrucciones.LE.toString());
+                break;
+            case ">":
+                output.generar(Instrucciones.GT.toString());
+                break;
+            case ">=":
+                output.generar(Instrucciones.GE.toString());
+                break;
+            case "==":
+                output.generar(Instrucciones.EQ.toString());
+                break;
+            case "!=":
+                output.generar(Instrucciones.NE.toString());
+                break;
+        }
     }
 }

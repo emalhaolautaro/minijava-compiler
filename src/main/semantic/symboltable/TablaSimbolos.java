@@ -5,6 +5,8 @@ import main.errorhandling.messages.SemanticErrorMessages;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.filemanager.OutputManager;
 import main.semantic.nodes.*;
+import main.semantic.nodes.nodosBloquesPredefinidos.*;
+import main.utils.Instrucciones;
 import main.utils.Token;
 import main.utils.TokenImpl;
 
@@ -94,6 +96,7 @@ public class TablaSimbolos extends Elemento {
         read.marcarComoPredefinido();
         read.setOffset(-1);
         read.setearClase(system);
+        read.agregarBloque(new NodoBloqueRead());
 
         //Crear metodo printB(boolean b)
         Token metodoPrintB = new TokenImpl(null, "printB", -1);
@@ -103,6 +106,7 @@ public class TablaSimbolos extends Elemento {
         printB.marcarComoPredefinido();
         printB.setOffset(-1);
         printB.setearClase(system);
+        printB.agregarBloque(new NodoBloquePrintB());
         try {
             printB.agregarParametro(new Parametro(tipoParametroPrintB, new TokenImpl(null, "b", -1)));
         } catch (SemanticException e) {
@@ -118,6 +122,7 @@ public class TablaSimbolos extends Elemento {
         printC.marcarComoPredefinido();
         printC.setOffset(-1);
         printC.setearClase(system);
+        printC.agregarBloque(new NodoBloquePrintC());
         try {
             printC.agregarParametro(new Parametro(tipoParametroPrintC, new TokenImpl(null, "c", -1)));
         } catch (SemanticException e) {
@@ -133,6 +138,7 @@ public class TablaSimbolos extends Elemento {
         printI.marcarComoPredefinido();
         printI.setOffset(-1);
         printI.setearClase(system);
+        printI.agregarBloque(new NodoBloquePrintI());
         try {
             printI.agregarParametro(new Parametro(tipoParametroPrintI, new TokenImpl(null, "i", -1)));
         } catch (SemanticException e) {
@@ -148,6 +154,7 @@ public class TablaSimbolos extends Elemento {
         printS.marcarComoPredefinido();
         printS.setOffset(-1);
         printS.setearClase(system);
+        printS.agregarBloque(new NodoBloquePrintS());
         try {
             printS.agregarParametro(new Parametro(tipoParametroPrintS, new TokenImpl(null, "s", -1)));
         } catch (SemanticException e) {
@@ -162,6 +169,7 @@ public class TablaSimbolos extends Elemento {
         println.marcarComoPredefinido();
         println.setOffset(-1);
         println.setearClase(system);
+        println.agregarBloque(new NodoBloquePrintln());
 
         //Crear metodo printBln(boolean b)
         Token metodoPrintBln = new TokenImpl(null, "printBln", -1);
@@ -171,6 +179,7 @@ public class TablaSimbolos extends Elemento {
         printBln.marcarComoPredefinido();
         printBln.setOffset(-1);
         printBln.setearClase(system);
+        printBln.agregarBloque(new NodoBloquePrintBln());
         try {
             printBln.agregarParametro(new Parametro(tipoParametroPrintBln, new TokenImpl(null, "b", -1)));
         } catch (SemanticException e) {
@@ -186,6 +195,7 @@ public class TablaSimbolos extends Elemento {
         printCln.marcarComoPredefinido();
         printCln.setOffset(-1);
         printCln.setearClase(system);
+        printCln.agregarBloque(new NodoBloquePrintCln());
         try {
             printCln.agregarParametro(new Parametro(tipoParametroPrintCln, new TokenImpl(null, "c", -1)));
         } catch (SemanticException e) {
@@ -201,6 +211,7 @@ public class TablaSimbolos extends Elemento {
         printIln.marcarComoPredefinido();
         printIln.setOffset(-1);
         printIln.setearClase(system);
+        printIln.agregarBloque(new NodoBloquePrintIln());
         try {
             printIln.agregarParametro(new Parametro(tipoParametroPrintIln, new TokenImpl(null, "i", -1)));
         } catch (SemanticException e) {
@@ -216,6 +227,7 @@ public class TablaSimbolos extends Elemento {
         printSln.marcarComoPredefinido();
         printSln.setOffset(-1);
         printSln.setearClase(system);
+        printSln.agregarBloque(new NodoBloquePrintSln());
         try {
             printSln.agregarParametro(new Parametro(tipoParametroPrintSln, new TokenImpl(null, "s", -1)));
         } catch (SemanticException e) {
@@ -287,8 +299,9 @@ public class TablaSimbolos extends Elemento {
         metodo.marcarComoPredefinido();
         metodo.setOffset(-1); // No se usa en la generación de código
         metodo.setearClase(object);
+        metodo.agregarParametro(new Parametro(tipoParametro, new TokenImpl(null, "i", -1)));
+        metodo.agregarBloque(new NodoBloqueDebugPrint());
         try {
-            metodo.agregarParametro(new Parametro(tipoParametro, new TokenImpl(null, "i", -1)));
             object.agregarMetodo(metodo);
         } catch (SemanticException e) {
             // No debería llegar acá
@@ -399,9 +412,32 @@ public class TablaSimbolos extends Elemento {
     }
 
     public void generar(OutputManager output) {
-        Metodo metMain = buscarMetodoMain();
+        Clase clase = buscarMetodoMain();
 
         output.generar(".CODE");
+        output.generar(Instrucciones.PUSH + " simple_heap_init");
+        output.generar(Instrucciones.CALL.toString());
+        output.generar("PUSH lbl_main@" + clase.obtenerNombre().obtenerLexema());
+        output.generar("CALL");
+        output.generar("HALT");
+        output.generar("");
+
+        output.generar("simple_heap_init: " + Instrucciones.RET + " 0");
+        output.generar("");
+        output.generar("simple_malloc: " + Instrucciones.LOADFP);
+        output.generar(Instrucciones.LOADSP.toString());
+        output.generar(Instrucciones.STOREFP.toString());
+        output.generar(Instrucciones.LOADHL.toString());
+        output.generar(Instrucciones.DUP.toString());
+        output.generar(Instrucciones.PUSH + " 1");
+        output.generar(Instrucciones.ADD.toString());
+        output.generar(Instrucciones.STORE + " 4");
+        output.generar(Instrucciones.LOAD + " 3");
+        output.generar(Instrucciones.ADD.toString());
+        output.generar(Instrucciones.STOREHL.toString());
+        output.generar(Instrucciones.STOREFP.toString());
+        output.generar(Instrucciones.RET + " 1");
+        output.generar("");
 
 
         for (Clase c : clases.values()) {
@@ -409,10 +445,11 @@ public class TablaSimbolos extends Elemento {
         }
     }
 
-    public Metodo buscarMetodoMain() {
+    public Clase buscarMetodoMain() {
         for (Clase c : clases.values()) {
-            Metodo m = c.obtenerMetodo("main");
-            return m;
+            Clase clase = c.existeMetodo("main")? c.obtenerMetodo("main").perteneceAClase() : null;
+            if (clase != null)
+                return c;
         }
         throw new SemanticException(SemanticErrorMessages.METODO_MAIN_NO_DECLARADO());
     }

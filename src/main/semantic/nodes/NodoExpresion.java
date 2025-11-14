@@ -2,6 +2,7 @@ package main.semantic.nodes;
 
 import main.filemanager.OutputManager;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
 import main.utils.Token;
 
 public abstract class NodoExpresion {
@@ -23,5 +24,5 @@ public abstract class NodoExpresion {
         System.out.print("- ".repeat(i) + "Expresion: " + valor.obtenerLexema());
     }
 
-    public void generar(OutputManager output, String nombreClase, String nombreMetodo){}
+    public void generar(OutputManager output, Unidad unidadActual){}
 }

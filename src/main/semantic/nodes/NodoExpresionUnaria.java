@@ -2,7 +2,10 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 public class NodoExpresionUnaria extends NodoExpresion{
@@ -51,5 +54,37 @@ public class NodoExpresionUnaria extends NodoExpresion{
                 throw new SemanticException(SemanticTwoErrorMessages.TIPOS_INCOMPATIBLES_UNARIA(tipoOperando.obtenerNombre().obtenerLexema(), operador));
         }
         return new TipoNull(operador);
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual){
+        operando.generar(output, unidadActual);
+
+        switch (operador.obtenerLexema()) {
+            case "-":
+                output.generar(Instrucciones.NEG + " ; cambio de signo");
+                break;
+            case "!":
+                output.generar(Instrucciones.NOT + " ; negación lógica");
+                break;
+            case "+":
+                // No hace nada, es un operador neutro
+                break;
+            case "++":
+            case "--":
+                output.generar(Instrucciones.PUSH + " 1");
+
+                if(operador.obtenerLexema().equals("++"))
+                    output.generar(Instrucciones.ADD.toString());
+                else
+                    output.generar(Instrucciones.SUB.toString());
+
+                if(operando instanceof NodoAccesoVar var){
+                    output.generar((Instrucciones.DUP.toString()));
+                    var.generarParaAlmacenar(output);
+                }
+
+                break;
+        }
     }
 }

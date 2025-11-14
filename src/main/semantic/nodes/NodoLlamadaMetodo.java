@@ -7,6 +7,7 @@ import main.semantic.symboltable.Clase;
 import main.semantic.symboltable.Metodo;
 import main.semantic.symboltable.Tipo;
 import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 import java.util.List;
@@ -17,6 +18,8 @@ public class NodoLlamadaMetodo extends NodoExpresion{
     private Token nombre;
     private List<NodoExpresion> argumentos;
     private NodoEncadenado encadenado;
+    private boolean esEstatico = false;
+    private boolean esEncadenado = false;
 
     public NodoLlamadaMetodo(Token nombre, List<NodoExpresion> argumentos) {
         this.nombre = nombre;
@@ -32,6 +35,10 @@ public class NodoLlamadaMetodo extends NodoExpresion{
     }
 
     public Token obtenerValor(){ return nombre; }
+
+    public void setEsEstatico(boolean esEstatico){
+        this.esEstatico = esEstatico;
+    }
 
     public void imprimirAST(int nivel){
         System.out.println("- ".repeat(nivel) + "LlamadaMetodo: " + nombre.obtenerLexema());
@@ -67,6 +74,10 @@ public class NodoLlamadaMetodo extends NodoExpresion{
             if (!m.esStatic()) {
                 throw new SemanticException(SemanticTwoErrorMessages.METODO_DINAMICO_EN_METODO_ESTATICO(nombre));
             }
+        }
+
+        if(m.esStatic()) {
+            esEstatico = true;
         }
 
         if (argumentos.size() != m.obtenerParametros().size()) {
@@ -107,7 +118,49 @@ public class NodoLlamadaMetodo extends NodoExpresion{
         return encadenado;
     }
 
-    public void generar(OutputManager output, String nombreClase, String nombreMetodo) {
+    public void setearEsEncadenado(boolean esEncadenado){
+        this.esEncadenado = esEncadenado;
+    }
 
+    public boolean obtenerEsEncadenado(){
+        return esEncadenado;
+    }
+
+    public void generar(OutputManager output, Unidad unidadActual) {
+        Clase clase = unidadActual.perteneceAClase();
+        Metodo metodo = clase.obtenerMetodo(nombre.obtenerLexema());
+        Clase clasePertenece = metodo.perteneceAClase();
+        System.out.println("esEstatico = " + esEstatico + " ; método = " + nombre.obtenerLexema());
+
+        Tipo tipoRetorno = metodo.obtenerTipoRetorno();
+        if (!(tipoRetorno instanceof TipoVoid)) {
+            output.generar(Instrucciones.RMEM + " 1" + " ; Reservar espacio para el valor de retorno");
+        }
+
+        System.out.println(argumentos.size());
+        for(NodoExpresion arg: argumentos){
+            System.out.println("→ Generando argumento: " + arg.getClass().getSimpleName());
+            arg.generar(output, unidadActual);
+        }
+
+        if(esEstatico){
+            System.out.println(unidadActual.perteneceAClase().obtenerNombre().obtenerLexema());
+            output.generar(Instrucciones.PUSH + " lbl_" + nombre.obtenerLexema() + "@" + clasePertenece.obtenerNombre().obtenerLexema());
+            output.generar(Instrucciones.CALL.toString());
+        }else{
+            output.generar(Instrucciones.LOAD + " 3");
+            for (int i = 0; i < argumentos.size(); i++) {
+                output.generar(Instrucciones.SWAP.toString());
+            }
+            output.generar(Instrucciones.DUP.toString());
+            output.generar(Instrucciones.LOADREF + " 0" + " ; Cargar puntero a la VT");
+            int offsetMetodo = metodo.obtenerOffset(); // (Offset calculado en Clase.calcularOffsetMetodos)
+            output.generar(Instrucciones.LOADREF + " " + offsetMetodo + " ; Cargar dirección del método (offset " + offsetMetodo + ")");
+            output.generar(Instrucciones.CALL.toString());
+        }
+
+        if(encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)){
+            encadenado.generar(output, unidadActual);
+        }
     }
 }

@@ -3,9 +3,12 @@ package main.semantic.nodes;
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticErrorMessages;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Clase;
 import main.semantic.symboltable.Metodo;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 import java.util.ArrayList;
@@ -114,4 +117,28 @@ public class NodoLlamadaMetodoEstatico extends NodoExpresion{
     }
 
     public Token obtenerValor(){ return metodo; }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual) {
+        Clase c = tablaSimbolos.obtenerClasePorNombre(clase.obtenerLexema());
+        Metodo m = c.obtenerMetodo(metodo.obtenerLexema());
+        Tipo tipoRetorno = m.obtenerTipoRetorno();
+
+        if (!(tipoRetorno instanceof TipoVoid)) {
+            output.generar(Instrucciones.RMEM + " 1" + " ; Reservar espacio para valor de retorno");
+        }
+
+        for(NodoExpresion argumento : argumentos) {
+            argumento.generar(output, unidadActual);
+        }
+
+        String etiquetaMetodo = "lbl_" + metodo.obtenerLexema() + "@" + clase.obtenerLexema();
+
+        output.generar(Instrucciones.PUSH + " " +etiquetaMetodo);
+        output.generar(Instrucciones.CALL.toString());
+
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            encadenado.generar(output, unidadActual);
+        }
+    }
 }

@@ -5,6 +5,7 @@ import main.errorhandling.messages.SemanticErrorMessages;
 import main.filemanager.OutputManager;
 import main.semantic.nodes.NodoBloque;
 import main.semantic.nodes.NodoExpresion;
+import main.utils.ElementoConOffset;
 import main.utils.Instrucciones;
 import main.utils.Token;
 
@@ -13,9 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Constructor extends Unidad {
+public class Constructor extends Unidad implements ElementoConOffset {
     private Token visibilidad;
     private NodoBloque bloque;
+    private int Offset;
 
     public Constructor(Token nombre, Token visibilidad) {
         super(nombre);
@@ -63,6 +65,8 @@ public class Constructor extends Unidad {
             }
             param.put(p.obtenerNombre().obtenerLexema(), p);
         }
+
+        calcularOffsetsParametros();
     }
 
     // Dentro de tu clase Constructor
@@ -124,7 +128,39 @@ public class Constructor extends Unidad {
     @Override
     public void generar(OutputManager output, String nombreClase) {
         String nombreCons;
-        nombreCons = "builder_" + nombreClase;
-        output.generar("lbl_"+nombreCons+": "+ Instrucciones.NOP);
+        nombreCons = "builder@" + nombreClase;
+        output.generar("lbl_"+nombreCons+": "+ Instrucciones.LOADFP);
+        output.generar(Instrucciones.LOADSP.toString());
+        output.generar(Instrucciones.STOREFP.toString());
+
+        int cantLocales = getCantidadTotalVariablesLocales();
+        if (cantLocales > 0) {
+            output.generar(Instrucciones.RMEM + " " + cantLocales);
+        }
+
+        bloque.generar(output, this);
+
+        if (cantLocales > 0) {
+            output.generar(Instrucciones.FMEM + " " + cantLocales);
+
+        }
+
+        output.generar(Instrucciones.STOREFP.toString());
+        int cantParams = obtenerParametros().size() + 1;
+        output.generar(Instrucciones.RET + " " + cantParams);
+    }
+
+    public void setOffset(int i) {
+        Offset = i;
+    }
+
+    @Override
+    public int obtenerOffset() {
+        return Offset;
+    }
+
+    @Override
+    public boolean esStatic() {
+        return false;
     }
 }

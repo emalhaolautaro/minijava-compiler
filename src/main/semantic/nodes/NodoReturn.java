@@ -2,7 +2,10 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 public class NodoReturn extends NodoSentencia{
@@ -32,19 +35,16 @@ public class NodoReturn extends NodoSentencia{
     public void chequear() {
         boolean metodoEsVoid = tipoMetodo instanceof TipoVoid;
 
-        // 🔹 Caso 1: método void → no puede retornar expresión
         if (metodoEsVoid) {
             if (retorno != null && !(retorno instanceof NodoExpresionVacia)) {
                 // Error: método void con retorno con expresión
                 Token tokError = (retorno.obtenerValor() != null) ? retorno.obtenerValor() : returnTok;
                 throw new SemanticException(SemanticTwoErrorMessages.RETURN_VOID_CON_EXPRESION(tokError));
             }
-            return; // ✅ correcto: return; vacío en método void
+            return;
         }
 
-        // Regla: return no puede ser vacío (return e;).
         if (retorno == null || retorno instanceof NodoExpresionVacia) {
-            // Error: El método espera un retorno, pero se encontró un return vacío.
             throw new SemanticException(SemanticTwoErrorMessages.RETURN_NO_VOID_VACIO(returnTok));
         }
 
@@ -56,6 +56,28 @@ public class NodoReturn extends NodoSentencia{
             throw new SemanticException(SemanticTwoErrorMessages.RETORNO_NO_COMPATIBLE(retorno, tipoMetodo, tipoRetornoExpresion));
         }
         // Si es compatible, es válido.
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual){
+        boolean metodoVoid = tipoMetodo instanceof TipoVoid;
+
+        if(!metodoVoid){
+            retorno.generar(output, unidadActual);
+            int m_size = unidadActual.obtenerParametros().size();
+            int offsetRetorno = m_size + 3;
+            output.generar(Instrucciones.STORE + " " + offsetRetorno + " ; Guardar valor de retorno en M[fp+" + offsetRetorno + "]");
+        }
+
+        String nombreMetodo = unidadActual.obtenerNombre().obtenerLexema();
+        // Obtener el nombre de la clase (ej: "TestNew")
+        String nombreClase = unidadActual.perteneceAClase().obtenerNombre().obtenerLexema();
+
+        // Construir la etiqueta única del epílogo (ej: "lbl_end_doble@TestNew")
+        String etiquetaFin = "lbl_end_" + nombreMetodo + "@" + nombreClase;
+
+        output.generar(Instrucciones.JUMP + " " + etiquetaFin +
+                " ; salto al final del método tras return");
     }
 
     @Override

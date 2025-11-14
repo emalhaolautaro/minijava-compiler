@@ -5,6 +5,8 @@ import java.io.IOException;
 
 public class OutputManagerImpl implements OutputManager{
     private FileWriter filewriter;
+    int contador = 0;
+    int contadorStrings = 0;
 
     public OutputManagerImpl(String file_name) {
         try {
@@ -29,5 +31,15 @@ public class OutputManagerImpl implements OutputManager{
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    public int obtenerEIncrementarContIfsWhiles(){
+        contador++;
+        return contador;
+    }
+
+    public int obtenerEIncrementarContsStrings(){
+        contadorStrings++;
+        return contadorStrings;
     }
 }

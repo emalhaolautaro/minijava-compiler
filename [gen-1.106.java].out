@@ -1,0 +1,335 @@
+.CODE
+PUSH simple_heap_init
+CALL
+PUSH lbl_main@TestHerencia
+CALL
+HALT
+
+simple_heap_init: RET 0
+
+simple_malloc: LOADFP
+LOADSP
+STOREFP
+LOADHL
+DUP
+PUSH 1
+ADD
+STORE 4
+LOAD 3
+ADD
+STOREHL
+STOREFP
+RET 1
+
+.DATA
+VT@Auto: DW lbl_acelerar@Auto
+DW lbl_frenar@Vehiculo
+DW lbl_prenderLuces@Vehiculo
+
+.CODE
+lbl_builder@Auto: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_acelerar@Auto: LOADFP
+LOADSP
+STOREFP
+PUSH 2
+PUSH lbl_printIln@System
+CALL
+LOAD 3
+DUP
+LOADREF 0 ; Cargar puntero a la VT
+LOADREF 2 ; Cargar dirección del método (offset 2)
+CALL
+lbl_end_acelerar@Auto: NOP
+STOREFP
+RET 0
+
+.DATA
+VT@Vehiculo: DW lbl_acelerar@Vehiculo
+DW lbl_frenar@Vehiculo
+DW lbl_prenderLuces@Vehiculo
+
+.CODE
+lbl_builder@Vehiculo: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_acelerar@Vehiculo: LOADFP
+LOADSP
+STOREFP
+PUSH 1
+PUSH lbl_printIln@System
+CALL
+lbl_end_acelerar@Vehiculo: NOP
+STOREFP
+RET 0
+lbl_frenar@Vehiculo: LOADFP
+LOADSP
+STOREFP
+PUSH 10
+PUSH lbl_printIln@System
+CALL
+lbl_end_frenar@Vehiculo: NOP
+STOREFP
+RET 0
+lbl_prenderLuces@Vehiculo: LOADFP
+LOADSP
+STOREFP
+PUSH 100
+PUSH lbl_printIln@System
+CALL
+lbl_end_prenderLuces@Vehiculo: NOP
+STOREFP
+RET 0
+
+.DATA
+VT@String: NOP
+
+.CODE
+lbl_debugPrint@String: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
+STOREFP
+RET 1
+
+.DATA
+VT@Deportivo: DW lbl_acelerar@Deportivo
+DW lbl_frenar@Deportivo
+DW lbl_prenderLuces@Vehiculo
+
+.CODE
+lbl_builder@Deportivo: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_acelerar@Deportivo: LOADFP
+LOADSP
+STOREFP
+PUSH 3
+PUSH lbl_printIln@System
+CALL
+LOAD 3
+DUP
+LOADREF 0 ; Cargar puntero a la VT
+LOADREF 1 ; Cargar dirección del método (offset 1)
+CALL
+lbl_end_acelerar@Deportivo: NOP
+STOREFP
+RET 0
+lbl_frenar@Deportivo: LOADFP
+LOADSP
+STOREFP
+PUSH 20
+PUSH lbl_printIln@System
+CALL
+lbl_end_frenar@Deportivo: NOP
+STOREFP
+RET 0
+
+.DATA
+VT@TestHerencia: DW lbl_andar@TestHerencia
+
+.CODE
+lbl_builder@TestHerencia: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_main@TestHerencia: LOADFP
+LOADSP
+STOREFP
+RMEM 1 ; Reservar 1 celdas locales
+RMEM 1 ; Reservar espacio para el puntero 'new'
+PUSH 1 ; Apilar tamaño del CIR (k)
+PUSH simple_malloc
+CALL
+DUP
+PUSH VT@TestHerencia
+STOREREF 0 ; Guardar puntero a la VT en offset 0
+DUP
+PUSH lbl_builder@TestHerencia
+CALL
+STORE 0 ; Guardar variable local t
+FMEM 1 ; Liberar slot temporal del 'new'
+LOAD 0 ; Cargar variable local t
+DUP ; duplicar ref obj
+LOADREF 0 ; cargar VT
+LOADREF 0 ; cargar dir metodo andar
+CALL
+lbl_end_main@TestHerencia: NOP
+FMEM 1 ; Liberar celdas locales
+STOREFP
+RET 0
+lbl_andar@TestHerencia: LOADFP
+LOADSP
+STOREFP
+RMEM 3 ; Reservar 3 celdas locales
+RMEM 1 ; Reservar espacio para el puntero 'new'
+PUSH 1 ; Apilar tamaño del CIR (k)
+PUSH simple_malloc
+CALL
+DUP
+PUSH VT@Vehiculo
+STOREREF 0 ; Guardar puntero a la VT en offset 0
+DUP
+PUSH lbl_builder@Vehiculo
+CALL
+STORE 0 ; Guardar variable local v
+FMEM 1 ; Liberar slot temporal del 'new'
+RMEM 1 ; Reservar espacio para el puntero 'new'
+PUSH 1 ; Apilar tamaño del CIR (k)
+PUSH simple_malloc
+CALL
+DUP
+PUSH VT@Auto
+STOREREF 0 ; Guardar puntero a la VT en offset 0
+DUP
+PUSH lbl_builder@Auto
+CALL
+STORE -1 ; Guardar variable local a
+FMEM 1 ; Liberar slot temporal del 'new'
+RMEM 1 ; Reservar espacio para el puntero 'new'
+PUSH 1 ; Apilar tamaño del CIR (k)
+PUSH simple_malloc
+CALL
+DUP
+PUSH VT@Deportivo
+STOREREF 0 ; Guardar puntero a la VT en offset 0
+DUP
+PUSH lbl_builder@Deportivo
+CALL
+STORE -2 ; Guardar variable local d
+FMEM 1 ; Liberar slot temporal del 'new'
+LOAD -2 ; Cargar variable local d
+DUP ; duplicar ref obj
+LOADREF 0 ; cargar VT
+LOADREF 0 ; cargar dir metodo acelerar
+CALL
+lbl_end_andar@TestHerencia: NOP
+FMEM 3 ; Liberar celdas locales
+STOREFP
+RET 0
+
+.DATA
+VT@System: NOP
+
+.CODE
+lbl_read@System: LOADFP
+LOADSP
+STOREFP
+READ
+PUSH 48
+SUB
+STORE 3
+lbl_end_read@System: NOP
+STOREFP
+RET 0
+lbl_printB@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+BPRINT
+lbl_end_printB@System: NOP
+STOREFP
+RET 1
+lbl_printC@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+CPRINT
+lbl_end_printC@System: NOP
+STOREFP
+RET 1
+lbl_printI@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_printI@System: NOP
+STOREFP
+RET 1
+lbl_printS@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3 ; Cargar parámetro 's' (puntero al CIR)
+PUSH 1 ; Apilar offset de los datos del string
+ADD ; Calcular Puntero_CIR + 1
+SPRINT ; Imprimir el string
+lbl_end_printS@System: NOP
+STOREFP
+RET 1
+lbl_println@System: LOADFP
+LOADSP
+STOREFP
+PRNLN
+lbl_end_println@System: NOP
+STOREFP
+RET 0
+lbl_printBln@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+BPRINT
+PRNLN
+lbl_end_printBln@System: NOP
+STOREFP
+RET 1
+lbl_printCln@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+CPRINT
+PRNLN
+lbl_end_printCln@System: NOP
+STOREFP
+RET 1
+lbl_printIln@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+PRNLN
+lbl_end_printIln@System: NOP
+STOREFP
+RET 1
+lbl_printSln@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3 ; Cargar parámetro 's' (puntero al CIR)
+PUSH 1 ; Apilar offset de los datos del string
+ADD ; Calcular Puntero_CIR + 1
+SPRINT ; Imprimir el string
+PRNLN
+lbl_end_printSln@System: NOP
+STOREFP
+RET 1
+lbl_debugPrint@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@System: NOP
+STOREFP
+RET 1
+
+.DATA
+VT@Object: NOP
+
+.CODE
+lbl_debugPrint@Object: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@Object: NOP
+STOREFP
+RET 1
+

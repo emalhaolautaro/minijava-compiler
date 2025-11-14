@@ -2,7 +2,10 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.filemanager.OutputManager;
 import main.semantic.symboltable.Tipo;
+import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.PalabraReservada;
 import main.utils.Token;
 
@@ -12,6 +15,7 @@ public class NodoVarLocal extends NodoSentencia{
     private Token var;
     private NodoExpresion expresionAsignada;
     private Tipo tipoVar;
+    int Offset;
 
     public NodoVarLocal(Token var, NodoExpresion expresion){
         this.var = var;
@@ -50,6 +54,24 @@ public class NodoVarLocal extends NodoSentencia{
     public void imprimirAST(int nivel) {
         System.out.println("- ".repeat(nivel) + "VarLocal:");
         System.out.println("- ".repeat(nivel + 1) + "Variable: " + var.obtenerLexema());
+        System.out.println("- ".repeat(nivel + 2) + "Offset: " + Offset);
         expresionAsignada.imprimirAST(nivel + 2);
+    }
+
+    public int obtenerOffset() {
+        return Offset;
+    }
+
+    public void setOffset(int i) {
+        Offset = i;
+    }
+
+    @Override
+    public void generar(OutputManager output, Unidad unidadActual) {
+        expresionAsignada.generar(output, unidadActual);
+        output.generar("STORE " + (Offset) + " ; Guardar variable local " + var.obtenerLexema());
+        if (expresionAsignada instanceof NodoLlamadaConstructor) {
+            output.generar(Instrucciones.FMEM + " 1" + " ; Liberar slot temporal del 'new'");
+        }
     }
 }
