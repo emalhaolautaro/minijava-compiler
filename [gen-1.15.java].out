@@ -1,0 +1,260 @@
+.CODE
+PUSH simple_heap_init
+CALL
+PUSH lbl_main@TestIf
+CALL
+HALT
+
+simple_heap_init: RET 0
+
+simple_malloc: LOADFP
+LOADSP
+STOREFP
+LOADHL
+DUP
+PUSH 1
+ADD
+STORE 4
+LOAD 3
+ADD
+STOREHL
+STOREFP
+RET 1
+
+.DATA
+VT@System: NOP
+
+.CODE
+lbl_read@System: LOADFP
+LOADSP
+STOREFP
+READ
+PUSH 48
+SUB
+STORE 3
+lbl_end_read@System: NOP
+STOREFP
+RET 0
+lbl_printB@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+BPRINT
+lbl_end_printB@System: NOP
+STOREFP
+RET 1
+lbl_printC@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+CPRINT
+lbl_end_printC@System: NOP
+STOREFP
+RET 1
+lbl_printI@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_printI@System: NOP
+STOREFP
+RET 1
+lbl_printS@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3 ; Cargar parámetro 's' (puntero al CIR)
+PUSH 1 ; Apilar offset de los datos del string
+ADD ; Calcular Puntero_CIR + 1
+SPRINT ; Imprimir el string
+lbl_end_printS@System: NOP
+STOREFP
+RET 1
+lbl_println@System: LOADFP
+LOADSP
+STOREFP
+PRNLN
+lbl_end_println@System: NOP
+STOREFP
+RET 0
+lbl_printBln@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+BPRINT
+PRNLN
+lbl_end_printBln@System: NOP
+STOREFP
+RET 1
+lbl_printCln@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+CPRINT
+PRNLN
+lbl_end_printCln@System: NOP
+STOREFP
+RET 1
+lbl_printIln@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+PRNLN
+lbl_end_printIln@System: NOP
+STOREFP
+RET 1
+lbl_printSln@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3 ; Cargar parámetro 's' (puntero al CIR)
+PUSH 1 ; Apilar offset de los datos del string
+ADD ; Calcular Puntero_CIR + 1
+SPRINT ; Imprimir el string
+PRNLN
+lbl_end_printSln@System: NOP
+STOREFP
+RET 1
+lbl_debugPrint@System: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@System: NOP
+STOREFP
+RET 1
+
+.DATA
+VT@TestIf: NOP
+
+.CODE
+lbl_builder@TestIf: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_main@TestIf: LOADFP
+LOADSP
+STOREFP
+RMEM 2 ; Reservar 2 celdas locales
+PUSH 5
+STORE 0 ; Guardar variable local x
+LOAD 0 ; Cargar variable local x
+PUSH 1
+ADD
+DUP
+STORE 0
+PUSH lbl_printIln@System
+CALL
+LOAD 0 ; Cargar variable local x
+PUSH 1
+SUB
+DUP
+STORE 0
+PUSH lbl_printIln@System
+CALL
+PUSH 5
+STORE -1 ; Guardar variable local y
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+GT
+BF lbl_else1
+PUSH 1
+PUSH lbl_printIln@System
+CALL
+JUMP lbl_finif1
+lbl_else1: NOP
+PUSH 2
+PUSH lbl_printIln@System
+CALL
+lbl_finif1: NOP
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+LT
+BF lbl_else2
+PUSH 3
+PUSH lbl_printIln@System
+CALL
+JUMP lbl_finif2
+lbl_else2: NOP
+PUSH 4
+PUSH lbl_printIln@System
+CALL
+lbl_finif2: NOP
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+GT
+BF lbl_finif3
+PUSH 5
+PUSH lbl_printIln@System
+CALL
+lbl_finif3: NOP
+PUSH 6
+PUSH lbl_printIln@System
+CALL
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+LT
+BF lbl_finif4
+PUSH 7
+PUSH lbl_printIln@System
+CALL
+lbl_finif4: NOP
+PUSH 8
+PUSH lbl_printIln@System
+CALL
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+EQ
+BF lbl_finif5
+PUSH 9
+PUSH lbl_printIln@System
+CALL
+lbl_finif5: NOP
+LOAD 0 ; Cargar variable local x
+PUSH 1
+ADD
+LOAD -1 ; Cargar variable local y
+PUSH 1
+ADD
+EQ
+BF lbl_else6
+PUSH 10
+PUSH lbl_printIln@System
+CALL
+JUMP lbl_finif6
+lbl_else6: NOP
+PUSH 11
+PUSH lbl_printIln@System
+CALL
+lbl_finif6: NOP
+lbl_end_main@TestIf: NOP
+FMEM 2 ; Liberar celdas locales
+STOREFP
+RET 0
+
+.DATA
+VT@String: NOP
+
+.CODE
+lbl_debugPrint@String: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
+STOREFP
+RET 1
+
+.DATA
+VT@Object: NOP
+
+.CODE
+lbl_debugPrint@Object: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@Object: NOP
+STOREFP
+RET 1
+
