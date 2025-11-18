@@ -2,16 +2,17 @@ package main.semantic.nodes;
 
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
+import main.semantic.symboltable.Atributo;
 import main.semantic.symboltable.Tipo;
 import main.utils.Token;
 
 public class NodoAtributo extends NodoExpresion{
-    Tipo tipo;
+    Atributo atributo;
     NodoExpresion expresion;
 
-    public NodoAtributo(Token nombre, Tipo tipo, NodoExpresion expresion){
-        super(nombre);
-        this.tipo = tipo;
+    public NodoAtributo(Atributo atributo, NodoExpresion expresion){
+        super(atributo.obtenerNombre());
+        this.atributo = atributo;
         this.expresion = expresion;
     }
 
@@ -25,6 +26,7 @@ public class NodoAtributo extends NodoExpresion{
 
     @Override
     public Tipo chequear() {
+        Tipo tipo = atributo.obtenerTipo();
         if (expresion == null)
             return tipo;
 
@@ -52,8 +54,11 @@ public class NodoAtributo extends NodoExpresion{
     }
 
     public void imprimirAST(int nivel){
-        System.out.println("- ".repeat(nivel) + "Atributo: " + tipo.obtenerNombre().obtenerLexema() + " " + obtenerValor().obtenerLexema() + ": ");
+        System.out.println("- ".repeat(nivel) + "NodoAtributo: " + atributo.obtenerTipo().obtenerNombre().obtenerLexema() + " " + obtenerValor().obtenerLexema() + ": ");
+        System.out.println("- ".repeat(nivel+1) + "Offset: " + atributo.obtenerOffset());
         if(expresion != null)
             expresion.imprimirAST(nivel + 1);
     }
+
+
 }

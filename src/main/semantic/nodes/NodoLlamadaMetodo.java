@@ -20,6 +20,8 @@ public class NodoLlamadaMetodo extends NodoExpresion{
     private NodoEncadenado encadenado;
     private boolean esEstatico = false;
     private boolean esEncadenado = false;
+    private Metodo metodo;
+    private int offset;
 
     public NodoLlamadaMetodo(Token nombre, List<NodoExpresion> argumentos) {
         this.nombre = nombre;
@@ -107,6 +109,8 @@ public class NodoLlamadaMetodo extends NodoExpresion{
             return encadenado.chequear(tipoBase);
         }
 
+        metodo = m;
+        offset = m.obtenerOffset();
         return tipoBase;
     }
 
@@ -130,28 +134,25 @@ public class NodoLlamadaMetodo extends NodoExpresion{
         Clase clase = unidadActual.perteneceAClase();
         Metodo metodo = clase.obtenerMetodo(nombre.obtenerLexema());
         Clase clasePertenece = metodo.perteneceAClase();
-        System.out.println("esEstatico = " + esEstatico + " ; método = " + nombre.obtenerLexema());
 
         Tipo tipoRetorno = metodo.obtenerTipoRetorno();
         if (!(tipoRetorno instanceof TipoVoid)) {
             output.generar(Instrucciones.RMEM + " 1" + " ; Reservar espacio para el valor de retorno");
         }
 
-        System.out.println(argumentos.size());
+        if(!esEstatico)
+            output.generar(Instrucciones.LOAD + " 3");
+
         for(NodoExpresion arg: argumentos){
-            System.out.println("→ Generando argumento: " + arg.getClass().getSimpleName());
             arg.generar(output, unidadActual);
+            if(!esEstatico)
+                output.generar(Instrucciones.SWAP.toString());
         }
 
         if(esEstatico){
-            System.out.println(unidadActual.perteneceAClase().obtenerNombre().obtenerLexema());
             output.generar(Instrucciones.PUSH + " lbl_" + nombre.obtenerLexema() + "@" + clasePertenece.obtenerNombre().obtenerLexema());
             output.generar(Instrucciones.CALL.toString());
         }else{
-            output.generar(Instrucciones.LOAD + " 3");
-            for (int i = 0; i < argumentos.size(); i++) {
-                output.generar(Instrucciones.SWAP.toString());
-            }
             output.generar(Instrucciones.DUP.toString());
             output.generar(Instrucciones.LOADREF + " 0" + " ; Cargar puntero a la VT");
             int offsetMetodo = metodo.obtenerOffset(); // (Offset calculado en Clase.calcularOffsetMetodos)
@@ -161,6 +162,33 @@ public class NodoLlamadaMetodo extends NodoExpresion{
 
         if(encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)){
             encadenado.generar(output, unidadActual);
+        }
+    }
+
+    public void generarParaAlmacenar(OutputManager output, Unidad unidadActual) {
+        if (!esEstatico) {
+            output.generar(Instrucciones.LOAD + " 3 ; Cargar this implícito (M[fp+3])");
+        }
+
+        for (NodoExpresion argumento : argumentos) {
+            argumento.generar(output, unidadActual);
+            output.generar(Instrucciones.SWAP + " ; Poner argumento sobre 'this'");
+        }
+
+        output.generar(Instrucciones.RMEM + " 1 ; Reservar espacio para valor de retorno");
+        output.generar(Instrucciones.SWAP + " ; Poner ret_val debajo de 'this'");
+
+        if (!esEstatico) {
+            output.generar(Instrucciones.DUP + " ; duplicar ref obj (this)");
+            output.generar(Instrucciones.LOADREF + " 0 ; cargar VT");
+            output.generar(Instrucciones.LOADREF + " " + offset + " ; cargar dir metodo");
+            output.generar(Instrucciones.CALL.toString());
+        } else {
+            output.generar(Instrucciones.PUSH + " lbl_" + nombre.obtenerLexema() + "@" + metodo.perteneceAClase().obtenerNombre().obtenerLexema());
+            output.generar(Instrucciones.CALL.toString());
+        }
+        if(encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)){
+            encadenado.generarParaAlmacenar(output, unidadActual);
         }
     }
 }

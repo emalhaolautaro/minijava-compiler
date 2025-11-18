@@ -25,7 +25,7 @@ public class Clase extends Elemento {
     private Map<String, Constructor> constructores;
     private boolean consolidada = false;
     private boolean esPredefinida = false;
-    private Map<String, NodoAtributo> nodosAtributos;
+    private List<NodoAtributo> nodosAtributos;
 
     public Clase(Token modificador, Token nombre, Token padre) {
         super(nombre);
@@ -36,7 +36,7 @@ public class Clase extends Elemento {
         this.listaAtributos = new ArrayList<>();
         this.metodos = new HashMap<>();
         this.listaMetodos = new ArrayList<>();
-        this.nodosAtributos = new HashMap<>();
+        this.nodosAtributos = new ArrayList<>();
     }
 
     public void agregarAtributo(Atributo atributo, NodoAtributo at) {
@@ -60,7 +60,7 @@ public class Clase extends Elemento {
 
         atributos.put(atributo.obtenerNombre().obtenerLexema(), atributo);
         listaAtributos.add(atributo);
-        nodosAtributos.put(atributo.obtenerNombre().obtenerLexema(), at);
+        nodosAtributos.add(at);
     }
 
     public void agregarMetodo(Metodo metodo) {
@@ -272,7 +272,7 @@ public class Clase extends Elemento {
     public void imprimirAST() {
         System.out.println("Clase: " + nombre.obtenerLexema());
 
-        for(Atributo a: atributos.values()){
+        for(NodoAtributo a: nodosAtributos){
             a.imprimirAST(1);
         }
 
@@ -474,7 +474,7 @@ public class Clase extends Elemento {
             }
         }
 
-        for (NodoAtributo a : nodosAtributos.values()) {
+        for (NodoAtributo a : nodosAtributos) {
             a.chequear();
         }
     }
@@ -498,7 +498,6 @@ public class Clase extends Elemento {
                 if (!atributos.containsKey(nombreAtrib)) {
                     atributos.put(nombreAtrib, a); // heredamos
                     listaAtributos.add(a);
-                    System.out.println(">> " + this.nombre.obtenerLexema() + " hereda atributo " + nombreAtrib);
                 }
             }
 

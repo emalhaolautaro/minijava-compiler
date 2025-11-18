@@ -141,4 +141,27 @@ public class NodoLlamadaMetodoEstatico extends NodoExpresion{
             encadenado.generar(output, unidadActual);
         }
     }
+
+    public void generarParaAlmacenar(OutputManager output, Unidad unidadActual) {
+        Clase c = tablaSimbolos.obtenerClasePorNombre(clase.obtenerLexema());
+        Metodo m = c.obtenerMetodo(metodo.obtenerLexema());
+        Tipo tipoRetorno = m.obtenerTipoRetorno();
+
+        if (!(tipoRetorno instanceof TipoVoid)) {
+            output.generar(Instrucciones.RMEM + " 1" + " ; Reservar espacio para valor de retorno");
+        }
+
+        for(NodoExpresion argumento : argumentos) {
+            argumento.generar(output, unidadActual);
+        }
+
+        String etiquetaMetodo = "lbl_" + metodo.obtenerLexema() + "@" + clase.obtenerLexema();
+
+        output.generar(Instrucciones.PUSH + " " +etiquetaMetodo);
+        output.generar(Instrucciones.CALL.toString());
+
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            encadenado.generarParaAlmacenar(output, unidadActual);
+        }
+    }
 }

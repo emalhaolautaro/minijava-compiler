@@ -61,23 +61,28 @@ public class NodoReturn extends NodoSentencia{
     @Override
     public void generar(OutputManager output, Unidad unidadActual){
         boolean metodoVoid = tipoMetodo instanceof TipoVoid;
-
         if(!metodoVoid){
             retorno.generar(output, unidadActual);
             int m_size = unidadActual.obtenerParametros().size();
             int offsetRetorno = m_size + 3;
+            if(!(unidadActual.esStatic()))
+                offsetRetorno++;
             output.generar(Instrucciones.STORE + " " + offsetRetorno + " ; Guardar valor de retorno en M[fp+" + offsetRetorno + "]");
         }
+        int cantLocales = unidadActual.getCantidadTotalVariablesLocales();
+        if (cantLocales > 0) {
+            output.generar(Instrucciones.FMEM + " " + cantLocales + " ; Liberar celdas locales");
+        }
 
-        String nombreMetodo = unidadActual.obtenerNombre().obtenerLexema();
-        // Obtener el nombre de la clase (ej: "TestNew")
-        String nombreClase = unidadActual.perteneceAClase().obtenerNombre().obtenerLexema();
+        // 2b. Restaurar el Frame Pointer (STOREFP)
+        output.generar(Instrucciones.STOREFP.toString());
 
-        // Construir la etiqueta única del epílogo (ej: "lbl_end_doble@TestNew")
-        String etiquetaFin = "lbl_end_" + nombreMetodo + "@" + nombreClase;
-
-        output.generar(Instrucciones.JUMP + " " + etiquetaFin +
-                " ; salto al final del método tras return");
+        // 2c. Retornar (RET m), usando el conteo de PARÁMETROS
+        int celdasParams = unidadActual.obtenerParametros().size();
+        if (!unidadActual.esStatic()) {
+            celdasParams++; // Sumar 1 por el 'this'
+        }
+        output.generar(Instrucciones.RET + " " + celdasParams);
     }
 
     @Override

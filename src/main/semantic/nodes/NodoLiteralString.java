@@ -27,6 +27,10 @@ public class NodoLiteralString extends NodoExpresion{
 
     @Override
     public void generar(OutputManager output, Unidad unidadActual) {
-        output.generar(Instrucciones.PUSH + " " +obtenerValor().obtenerLexema());
+        String label = "lbl_string"+output.obtenerEIncrementarContsStrings();
+        output.generar(".DATA");
+        output.generar(label + ": DW " + obtenerValor().obtenerLexema() + ",0");
+        output.generar(".CODE");
+        output.generar(Instrucciones.PUSH + " " + label);
     }
 }

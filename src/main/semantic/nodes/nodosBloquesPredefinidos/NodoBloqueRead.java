@@ -21,6 +21,5 @@ public class NodoBloqueRead extends NodoBloque {
         output.generar(Instrucciones.PUSH + " 48");
         output.generar(Instrucciones.SUB.toString());
         output.generar(Instrucciones.STORE + " 3");
-        ///TODO: Consultar si es correcto o si debería recorrer todo el buffer
     }
 }

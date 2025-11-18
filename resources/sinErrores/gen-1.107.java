@@ -1,4 +1,4 @@
-///2&100&10&3&10&exitosamente
+///1&exitosamente
 class Vehiculo {
     int a;
 }
