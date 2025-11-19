@@ -131,6 +131,20 @@ RET 1
  
 
 .DATA
+VT@String: NOP
+
+.CODE
+lbl_debugPrint@String: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
+STOREFP
+RET 1
+ 
+
+.DATA
 VT@Init: NOP
 
 .CODE
@@ -222,20 +236,6 @@ STOREFP
 LOAD 3
 IPRINT
 lbl_end_debugPrint@Object: NOP
-STOREFP
-RET 1
- 
-
-.DATA
-VT@String: NOP
-
-.CODE
-lbl_debugPrint@String: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@String: NOP
 STOREFP
 RET 1
  

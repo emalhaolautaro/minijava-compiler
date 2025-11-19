@@ -63,7 +63,6 @@ public class NodoThis extends NodoExpresion{
 
     @Override
     public void generar(OutputManager output, Unidad unidadActual) {
-        System.out.println("Accedi al this");
         output.generar(Instrucciones.LOAD + " 3 ; Cargar this (M[fp+3])");
 
         if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {

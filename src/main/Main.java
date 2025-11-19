@@ -59,7 +59,6 @@ public class Main {
                 String nombreArchivoSalida = args[1];
                 abrirArchivo(nombreArchivo);
                 analizadorSintactico.inicial();
-                cerrarArchivo();
                 tablaSimbolos.declaracionCorrecta(tablaSimbolos);
                 tablaSimbolos.consolidar(tablaSimbolos);
                 tablaSimbolos.chequearSentencias();
@@ -67,13 +66,14 @@ public class Main {
                 generarCodigo(nombreArchivoSalida);
                 System.out.println("Compilacion exitosa.");
                 System.out.println("[SinErrores]");
+                cerrarArchivo();
             }
             catch(Exception e){
                 System.out.println(e.getMessage());
             }
         }
         else {
-            System.out.println("Usage: java -jar MiniJavaCompiler.jar <source-file>");
+            System.out.println("Usage: java -cp out main.Main <archivo-entrada> <archivo-salida>");
         }
     }
 

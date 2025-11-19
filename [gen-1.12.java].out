@@ -22,6 +22,41 @@ STOREFP
 RET 1
 
 .DATA
+VT@Init: NOP
+
+.CODE
+lbl_builder@Init: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_main@Init: LOADFP
+LOADSP
+STOREFP
+RMEM 1 ; Reservar 1 celdas locales
+PUSH 5
+STORE 0 ; Guardar variable local x
+LOAD 0 ; Cargar variable local x
+PUSH 1
+ADD
+DUP
+STORE 0
+PUSH lbl_printIln@System
+CALL
+LOAD 0 ; Cargar variable local x
+PUSH 1
+SUB
+DUP
+STORE 0
+PUSH lbl_printIln@System
+CALL
+lbl_end_main@Init: NOP
+FMEM 1 ; Liberar celdas locales
+STOREFP
+RET 0
+ 
+
+.DATA
 VT@Object: NOP
 
 .CODE
@@ -156,40 +191,5 @@ IPRINT
 lbl_end_debugPrint@System: NOP
 STOREFP
 RET 1
- 
-
-.DATA
-VT@Init: NOP
-
-.CODE
-lbl_builder@Init: LOADFP
-LOADSP
-STOREFP
-STOREFP
-RET 1
-lbl_main@Init: LOADFP
-LOADSP
-STOREFP
-RMEM 1 ; Reservar 1 celdas locales
-PUSH 5
-STORE 0 ; Guardar variable local x
-LOAD 0 ; Cargar variable local x
-PUSH 1
-ADD
-DUP
-STORE 0
-PUSH lbl_printIln@System
-CALL
-LOAD 0 ; Cargar variable local x
-PUSH 1
-SUB
-DUP
-STORE 0
-PUSH lbl_printIln@System
-CALL
-lbl_end_main@Init: NOP
-FMEM 1 ; Liberar celdas locales
-STOREFP
-RET 0
  
 

@@ -22,17 +22,113 @@ STOREFP
 RET 1
 
 .DATA
-VT@String: NOP
+VT@TestIf: NOP
 
 .CODE
-lbl_debugPrint@String: LOADFP
+lbl_builder@TestIf: LOADFP
 LOADSP
 STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@String: NOP
 STOREFP
 RET 1
+lbl_main@TestIf: LOADFP
+LOADSP
+STOREFP
+RMEM 2 ; Reservar 2 celdas locales
+PUSH 5
+STORE 0 ; Guardar variable local x
+LOAD 0 ; Cargar variable local x
+PUSH 1
+ADD
+DUP
+STORE 0
+PUSH lbl_printIln@System
+CALL
+LOAD 0 ; Cargar variable local x
+PUSH 1
+SUB
+DUP
+STORE 0
+PUSH lbl_printIln@System
+CALL
+PUSH 5
+STORE -1 ; Guardar variable local y
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+GT
+BF lbl_else1
+PUSH 1
+PUSH lbl_printIln@System
+CALL
+JUMP lbl_finif1
+lbl_else1: NOP
+PUSH 2
+PUSH lbl_printIln@System
+CALL
+lbl_finif1: NOP
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+LT
+BF lbl_else2
+PUSH 3
+PUSH lbl_printIln@System
+CALL
+JUMP lbl_finif2
+lbl_else2: NOP
+PUSH 4
+PUSH lbl_printIln@System
+CALL
+lbl_finif2: NOP
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+GT
+BF lbl_finif3
+PUSH 5
+PUSH lbl_printIln@System
+CALL
+lbl_finif3: NOP
+PUSH 6
+PUSH lbl_printIln@System
+CALL
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+LT
+BF lbl_finif4
+PUSH 7
+PUSH lbl_printIln@System
+CALL
+lbl_finif4: NOP
+PUSH 8
+PUSH lbl_printIln@System
+CALL
+LOAD 0 ; Cargar variable local x
+LOAD -1 ; Cargar variable local y
+EQ
+BF lbl_finif5
+PUSH 9
+PUSH lbl_printIln@System
+CALL
+lbl_finif5: NOP
+LOAD 0 ; Cargar variable local x
+PUSH 1
+ADD
+LOAD -1 ; Cargar variable local y
+PUSH 1
+ADD
+EQ
+BF lbl_else6
+PUSH 10
+PUSH lbl_printIln@System
+CALL
+JUMP lbl_finif6
+lbl_else6: NOP
+PUSH 11
+PUSH lbl_printIln@System
+CALL
+lbl_finif6: NOP
+lbl_end_main@TestIf: NOP
+FMEM 2 ; Liberar celdas locales
+STOREFP
+RET 0
  
 
 .DATA
@@ -159,112 +255,16 @@ RET 1
  
 
 .DATA
-VT@TestIf: NOP
+VT@String: NOP
 
 .CODE
-lbl_builder@TestIf: LOADFP
+lbl_debugPrint@String: LOADFP
 LOADSP
 STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
 STOREFP
 RET 1
-lbl_main@TestIf: LOADFP
-LOADSP
-STOREFP
-RMEM 2 ; Reservar 2 celdas locales
-PUSH 5
-STORE 0 ; Guardar variable local x
-LOAD 0 ; Cargar variable local x
-PUSH 1
-ADD
-DUP
-STORE 0
-PUSH lbl_printIln@System
-CALL
-LOAD 0 ; Cargar variable local x
-PUSH 1
-SUB
-DUP
-STORE 0
-PUSH lbl_printIln@System
-CALL
-PUSH 5
-STORE -1 ; Guardar variable local y
-LOAD 0 ; Cargar variable local x
-LOAD -1 ; Cargar variable local y
-GT
-BF lbl_else1
-PUSH 1
-PUSH lbl_printIln@System
-CALL
-JUMP lbl_finif1
-lbl_else1: NOP
-PUSH 2
-PUSH lbl_printIln@System
-CALL
-lbl_finif1: NOP
-LOAD 0 ; Cargar variable local x
-LOAD -1 ; Cargar variable local y
-LT
-BF lbl_else2
-PUSH 3
-PUSH lbl_printIln@System
-CALL
-JUMP lbl_finif2
-lbl_else2: NOP
-PUSH 4
-PUSH lbl_printIln@System
-CALL
-lbl_finif2: NOP
-LOAD 0 ; Cargar variable local x
-LOAD -1 ; Cargar variable local y
-GT
-BF lbl_finif3
-PUSH 5
-PUSH lbl_printIln@System
-CALL
-lbl_finif3: NOP
-PUSH 6
-PUSH lbl_printIln@System
-CALL
-LOAD 0 ; Cargar variable local x
-LOAD -1 ; Cargar variable local y
-LT
-BF lbl_finif4
-PUSH 7
-PUSH lbl_printIln@System
-CALL
-lbl_finif4: NOP
-PUSH 8
-PUSH lbl_printIln@System
-CALL
-LOAD 0 ; Cargar variable local x
-LOAD -1 ; Cargar variable local y
-EQ
-BF lbl_finif5
-PUSH 9
-PUSH lbl_printIln@System
-CALL
-lbl_finif5: NOP
-LOAD 0 ; Cargar variable local x
-PUSH 1
-ADD
-LOAD -1 ; Cargar variable local y
-PUSH 1
-ADD
-EQ
-BF lbl_else6
-PUSH 10
-PUSH lbl_printIln@System
-CALL
-JUMP lbl_finif6
-lbl_else6: NOP
-PUSH 11
-PUSH lbl_printIln@System
-CALL
-lbl_finif6: NOP
-lbl_end_main@TestIf: NOP
-FMEM 2 ; Liberar celdas locales
-STOREFP
-RET 0
  
 

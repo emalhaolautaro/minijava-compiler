@@ -145,35 +145,6 @@ RET 1
  
 
 .DATA
-VT@Init: NOP
-
-.CODE
-lbl_builder@Init: LOADFP
-LOADSP
-STOREFP
-STOREFP
-RET 1
-lbl_main@Init: LOADFP
-LOADSP
-STOREFP
-PUSH'h'
-PUSH lbl_printC@System
-CALL
-PUSH'o'
-PUSH lbl_printC@System
-CALL
-PUSH'l'
-PUSH lbl_printC@System
-CALL
-PUSH'a'
-PUSH lbl_printC@System
-CALL
-lbl_end_main@Init: NOP
-STOREFP
-RET 0
- 
-
-.DATA
 VT@String: NOP
 
 .CODE
@@ -185,5 +156,34 @@ IPRINT
 lbl_end_debugPrint@String: NOP
 STOREFP
 RET 1
+ 
+
+.DATA
+VT@Init: NOP
+
+.CODE
+lbl_builder@Init: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_main@Init: LOADFP
+LOADSP
+STOREFP
+PUSH 'h'
+PUSH lbl_printC@System
+CALL
+PUSH 'o'
+PUSH lbl_printC@System
+CALL
+PUSH 'l'
+PUSH lbl_printC@System
+CALL
+PUSH 'a'
+PUSH lbl_printC@System
+CALL
+lbl_end_main@Init: NOP
+STOREFP
+RET 0
  
 

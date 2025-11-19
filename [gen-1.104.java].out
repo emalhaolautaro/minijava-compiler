@@ -76,6 +76,20 @@ RET 1
  
 
 .DATA
+VT@String: NOP
+
+.CODE
+lbl_debugPrint@String: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
+STOREFP
+RET 1
+ 
+
+.DATA
 VT@Widget: DW lbl_imprimirId@Widget
 
 .CODE
@@ -96,20 +110,6 @@ LOADREF 1 ; Cargar atributo id
 PUSH lbl_printIln@System
 CALL
 lbl_end_imprimirId@Widget: NOP
-STOREFP
-RET 1
- 
-
-.DATA
-VT@String: NOP
-
-.CODE
-lbl_debugPrint@String: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@String: NOP
 STOREFP
 RET 1
  

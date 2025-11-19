@@ -22,20 +22,6 @@ STOREFP
 RET 1
 
 .DATA
-VT@Object: NOP
-
-.CODE
-lbl_debugPrint@Object: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@Object: NOP
-STOREFP
-RET 1
- 
-
-.DATA
 VT@TestIfReturn: NOP
 
 .CODE
@@ -84,20 +70,6 @@ CALL
 lbl_end_main@TestIfReturn: NOP
 STOREFP
 RET 0
- 
-
-.DATA
-VT@String: NOP
-
-.CODE
-lbl_debugPrint@String: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@String: NOP
-STOREFP
-RET 1
  
 
 .DATA
@@ -205,6 +177,34 @@ STOREFP
 LOAD 3
 IPRINT
 lbl_end_debugPrint@System: NOP
+STOREFP
+RET 1
+ 
+
+.DATA
+VT@Object: NOP
+
+.CODE
+lbl_debugPrint@Object: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@Object: NOP
+STOREFP
+RET 1
+ 
+
+.DATA
+VT@String: NOP
+
+.CODE
+lbl_debugPrint@String: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
 STOREFP
 RET 1
  

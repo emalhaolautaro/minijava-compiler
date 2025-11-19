@@ -176,7 +176,6 @@ public class NodoEncadenado {
         }
     }
 
-    // En NodoEncadenado.java
     public void generarParaAlmacenar(OutputManager output, Unidad unidadActual) {
 
         if (encadenado == null || (encadenado instanceof NodoEncadenadoVacio)) {

@@ -22,49 +22,6 @@ STOREFP
 RET 1
 
 .DATA
-VT@Init: NOP
-
-.CODE
-lbl_builder@Init: LOADFP
-LOADSP
-STOREFP
-STOREFP
-RET 1
-lbl_main@Init: LOADFP
-LOADSP
-STOREFP
-RMEM 1 ; Reservar 1 celdas locales
-RMEM 1 ; Reservar espacio para el puntero 'new'
-PUSH 3 ; Apilar tamaño del CIR (k)
-PUSH simple_malloc
-CALL
-DUP
-PUSH VT@A
-STOREREF 0 ; Guardar puntero a la VT en offset 0
-DUP
-PUSH lbl_builder@A
-CALL
-STORE 0 ; Guardar variable local a
-LOAD 0 ; Cargar variable local a
-DUP ; duplicar ref obj (this)
-LOADREF 0 ; cargar VT
-LOADREF 0 ; cargar dir metodo
-CALL
-LOAD 0 ; Cargar variable local a
-LOADREF 1 ; cargar atributo x
-PUSH lbl_printIln@System
-CALL
-LOAD 0 ; Cargar variable local a
-LOADREF 2 ; cargar atributo y
-PUSH lbl_printIln@System
-CALL
-lbl_end_main@Init: NOP
-FMEM 1 ; Liberar celdas locales
-STOREFP
-RET 0
- 
-
-.DATA
 VT@A: DW lbl_mc@A
 
 .CODE
@@ -199,6 +156,49 @@ IPRINT
 lbl_end_debugPrint@System: NOP
 STOREFP
 RET 1
+ 
+
+.DATA
+VT@Init: NOP
+
+.CODE
+lbl_builder@Init: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_main@Init: LOADFP
+LOADSP
+STOREFP
+RMEM 1 ; Reservar 1 celdas locales
+RMEM 1 ; Reservar espacio para el puntero 'new'
+PUSH 3 ; Apilar tamaño del CIR (k)
+PUSH simple_malloc
+CALL
+DUP
+PUSH VT@A
+STOREREF 0 ; Guardar puntero a la VT en offset 0
+DUP
+PUSH lbl_builder@A
+CALL
+STORE 0 ; Guardar variable local a
+LOAD 0 ; Cargar variable local a
+DUP ; duplicar ref obj (this)
+LOADREF 0 ; cargar VT
+LOADREF 0 ; cargar dir metodo
+CALL
+LOAD 0 ; Cargar variable local a
+LOADREF 1 ; cargar atributo x
+PUSH lbl_printIln@System
+CALL
+LOAD 0 ; Cargar variable local a
+LOADREF 2 ; cargar atributo y
+PUSH lbl_printIln@System
+CALL
+lbl_end_main@Init: NOP
+FMEM 1 ; Liberar celdas locales
+STOREFP
+RET 0
  
 
 .DATA

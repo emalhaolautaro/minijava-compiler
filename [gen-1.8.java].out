@@ -22,34 +22,6 @@ STOREFP
 RET 1
 
 .DATA
-VT@Object: NOP
-
-.CODE
-lbl_debugPrint@Object: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@Object: NOP
-STOREFP
-RET 1
- 
-
-.DATA
-VT@String: NOP
-
-.CODE
-lbl_debugPrint@String: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@String: NOP
-STOREFP
-RET 1
- 
-
-.DATA
 VT@System: NOP
 
 .CODE
@@ -159,6 +131,20 @@ RET 1
  
 
 .DATA
+VT@String: NOP
+
+.CODE
+lbl_debugPrint@String: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
+STOREFP
+RET 1
+ 
+
+.DATA
 VT@Init: NOP
 
 .CODE
@@ -195,5 +181,19 @@ lbl_end_main@Init: NOP
 FMEM 1 ; Liberar celdas locales
 STOREFP
 RET 0
+ 
+
+.DATA
+VT@Object: NOP
+
+.CODE
+lbl_debugPrint@Object: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@Object: NOP
+STOREFP
+RET 1
  
 

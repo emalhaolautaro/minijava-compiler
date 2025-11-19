@@ -36,6 +36,62 @@ RET 1
  
 
 .DATA
+VT@Init: NOP
+
+.CODE
+lbl_builder@Init: LOADFP
+LOADSP
+STOREFP
+STOREFP
+RET 1
+lbl_main@Init: LOADFP
+LOADSP
+STOREFP
+PUSH 3
+PUSH lbl_printIln@System
+CALL
+PUSH 3
+NEG ; cambio de signo
+PUSH lbl_printIln@System
+CALL
+PUSH 0
+NOT ; negación lógica
+PUSH lbl_printBln@System
+CALL
+PUSH 1
+NOT ; negación lógica
+PUSH lbl_printBln@System
+CALL
+PUSH 5
+PUSH 1
+ADD
+PUSH lbl_printIln@System
+CALL
+PUSH 5
+PUSH 1
+SUB
+PUSH lbl_printIln@System
+CALL
+lbl_end_main@Init: NOP
+STOREFP
+RET 0
+ 
+
+.DATA
+VT@String: NOP
+
+.CODE
+lbl_debugPrint@String: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
+STOREFP
+RET 1
+ 
+
+.DATA
 VT@System: NOP
 
 .CODE
@@ -142,61 +198,5 @@ IPRINT
 lbl_end_debugPrint@System: NOP
 STOREFP
 RET 1
- 
-
-.DATA
-VT@String: NOP
-
-.CODE
-lbl_debugPrint@String: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@String: NOP
-STOREFP
-RET 1
- 
-
-.DATA
-VT@Init: NOP
-
-.CODE
-lbl_builder@Init: LOADFP
-LOADSP
-STOREFP
-STOREFP
-RET 1
-lbl_main@Init: LOADFP
-LOADSP
-STOREFP
-PUSH 3
-PUSH lbl_printIln@System
-CALL
-PUSH 3
-NEG ; cambio de signo
-PUSH lbl_printIln@System
-CALL
-PUSH 0
-NOT ; negación lógica
-PUSH lbl_printBln@System
-CALL
-PUSH 1
-NOT ; negación lógica
-PUSH lbl_printBln@System
-CALL
-PUSH 5
-PUSH 1
-ADD
-PUSH lbl_printIln@System
-CALL
-PUSH 5
-PUSH 1
-SUB
-PUSH lbl_printIln@System
-CALL
-lbl_end_main@Init: NOP
-STOREFP
-RET 0
  
 
