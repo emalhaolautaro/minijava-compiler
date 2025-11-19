@@ -67,53 +67,63 @@ public class NodoAccesoVar extends NodoExpresion{
     }
 
     @Override
-    public void generar(OutputManager output, Unidad unidadActual){
+    public void generar(OutputManager output, Unidad unidadActual) {
         String nombreVar = obtenerValor().obtenerLexema();
-        System.out.println("Intentando acceder a la variable: " + nombreVar);
-        // Caso 1: variable local
+
         if (varLocal != null) {
             int offset = varLocal.obtenerOffset();
-            System.out.println("Accedi a la variable: " + nombreVar);
-            output.generar("LOAD " + offset + " ; Cargar variable local " + nombreVar);
+            output.generar(Instrucciones.LOAD + " " + offset + " ; Cargar variable local " + nombreVar);
         }
 
-        // Caso 2: parámetro
-        if (parametro != null) {
+        else if (parametro != null) {
             int offset = parametro.obtenerOffset();
-            System.out.println("Accedi al parametro: " + nombreVar);
-            output.generar("LOAD " + offset + " ; Cargar parámetro " + nombreVar);
+            output.generar(Instrucciones.LOAD + " " + offset + " ; Cargar parámetro " + nombreVar);
         }
 
-        // Caso 3: atributo (requiere this)
-        if (atributo != null) {
+        else if (atributo != null) {
             int offset = atributo.obtenerOffset();
-            System.out.println("Accedi al atributo: " + nombreVar);
-            output.generar("LOAD 3 ; Cargar this");
-            output.generar("LOADREF " + offset + " ; Cargar atributo " + nombreVar);
+            output.generar(Instrucciones.LOAD + " 3 ; Cargar this");
+            output.generar(Instrucciones.LOADREF + " " + offset + " ; Cargar atributo " + nombreVar);
         }
 
-        if(encadenado != null && !(encadenado instanceof NodoEncadenadoVacio))
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
             encadenado.generar(output, unidadActual);
+        }
     }
 
-    public void generarParaAlmacenar(OutputManager output){
+    public void generarParaAlmacenar(OutputManager output, Unidad unidadActual) {
         int offset;
 
-        // Caso 1: Variable local
-        if (varLocal != null) {
-            offset = varLocal.obtenerOffset();
-            output.generar(Instrucciones.STORE + " " + offset);
-        }
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            if (varLocal != null) {
+                offset = varLocal.obtenerOffset();
+                output.generar(Instrucciones.LOAD + " " + offset + " ; Cargar base 'x' para asignación");
+            }
+            else if (parametro != null) {
+                offset = parametro.obtenerOffset();
+                output.generar(Instrucciones.LOAD + " " + offset + " ; Cargar base param para asignación");
+            }
+            else if (atributo != null) {
+                offset = atributo.obtenerOffset();
+                output.generar(Instrucciones.LOAD + " 3");
+                output.generar(Instrucciones.LOADREF + " " + offset + " ; Cargar base atributo intermedio");
+            }
 
-        // Caso 2: Parámetro
-        else if (parametro != null) {
-            offset = parametro.obtenerOffset();
-            output.generar(Instrucciones.STORE + " " + offset);
-        }
+            encadenado.generarParaAlmacenar(output, unidadActual);
 
-        // Caso 3: Atributo de instancia
-        else {
-            if (atributo != null) {
+        } else {
+
+            if (varLocal != null) {
+                offset = varLocal.obtenerOffset();
+                output.generar(Instrucciones.STORE + " " + offset);
+            }
+
+            else if (parametro != null) {
+                offset = parametro.obtenerOffset();
+                output.generar(Instrucciones.STORE + " " + offset);
+            }
+
+            else if (atributo != null) {
                 offset = atributo.obtenerOffset();
                 output.generar(Instrucciones.LOAD + " 3");
                 output.generar(Instrucciones.SWAP.toString());

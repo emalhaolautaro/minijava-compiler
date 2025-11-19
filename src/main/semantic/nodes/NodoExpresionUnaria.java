@@ -81,7 +81,7 @@ public class NodoExpresionUnaria extends NodoExpresion{
 
                 if(operando instanceof NodoAccesoVar var){
                     output.generar((Instrucciones.DUP.toString()));
-                    var.generarParaAlmacenar(output);
+                    var.generarParaAlmacenar(output, unidadActual);
                 }
 
                 break;

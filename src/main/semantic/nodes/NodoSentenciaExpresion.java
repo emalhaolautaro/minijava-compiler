@@ -3,11 +3,14 @@ package main.semantic.nodes;
 import main.errorhandling.exceptions.SemanticException;
 import main.errorhandling.messages.SemanticTwoErrorMessages;
 import main.filemanager.OutputManager;
+import main.semantic.symboltable.Tipo;
 import main.semantic.symboltable.Unidad;
+import main.utils.Instrucciones;
 import main.utils.Token;
 
 public class NodoSentenciaExpresion extends NodoSentencia{
     private NodoExpresion expresion;
+    private Tipo tipoExpresion;
 
     public NodoSentenciaExpresion(NodoExpresion expresion) {
         this.expresion = expresion;
@@ -23,11 +26,10 @@ public class NodoSentenciaExpresion extends NodoSentencia{
 
     @Override
     public void chequear() {
-        expresion.chequear();
+        tipoExpresion = expresion.chequear();
 
         NodoExpresion expRaiz = expresion;
 
-        // Lógica para manejar expresiones parentetizadas con encadenamiento (ej: (p1).m3().m2();)
         if (expresion instanceof NodoExpresionParentizada) {
             NodoExpresionParentizada expPar = (NodoExpresionParentizada) expresion;
             NodoEncadenado enc = expPar.obtenerEncadenado();
@@ -148,7 +150,11 @@ public class NodoSentenciaExpresion extends NodoSentencia{
 
     @Override
     public void generar(OutputManager output, Unidad unidadActual) {
-        System.out.println(unidadActual.obtenerNombre().obtenerLexema());
         expresion.generar(output, unidadActual);
+        if(!(tipoExpresion instanceof TipoVoid)){
+            if(!(expresion instanceof NodoAsignacion)){
+                output.generar(Instrucciones.POP.toString());
+            }
+        }
     }
 }

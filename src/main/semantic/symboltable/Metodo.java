@@ -5,6 +5,7 @@ import main.errorhandling.messages.SemanticErrorMessages;
 import main.filemanager.OutputManager;
 import main.semantic.nodes.NodoBloque;
 import main.semantic.nodes.NodoBloqueNulo;
+import main.semantic.nodes.TipoVoid;
 import main.utils.ElementoConOffset;
 import main.utils.Instrucciones;
 import main.utils.Token;
@@ -200,6 +201,12 @@ public class Metodo extends Unidad implements ElementoConOffset {
 
         // 6. Epílogo
         output.generar(Instrucciones.STOREFP.toString());
-        output.generar(Instrucciones.RET + " " + (obtenerParametros().size()));
+
+        int celdasABorrar = obtenerParametros().size();
+        if(!(esStatic() || esPredefinido()))
+            celdasABorrar++;
+
+        output.generar(Instrucciones.RET + " " + celdasABorrar);
+        output.generar(" ");
     }
 }

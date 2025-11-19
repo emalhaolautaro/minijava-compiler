@@ -44,7 +44,7 @@ public class NodoExpresionParentizada extends NodoExpresion{
         expresion.generar(output, unidadActual);
 
         if(encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)){
-            //encadenado.generar(output, unidadActual);
+            encadenado.generar(output, unidadActual);
         }
     }
 

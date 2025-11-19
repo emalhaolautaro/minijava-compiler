@@ -4,4 +4,5 @@ public interface OutputManager {
     void generar(String linea);
     void cerrar();
     int obtenerEIncrementarContIfsWhiles();
+    int obtenerEIncrementarContsStrings();
 }

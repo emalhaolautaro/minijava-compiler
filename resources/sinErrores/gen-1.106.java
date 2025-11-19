@@ -1,4 +1,4 @@
-///2&100&10&3&10&exitosamente
+///2&10&3&exitosamente
 class Vehiculo {
     void acelerar() {
         System.printIln(1);
@@ -16,14 +16,12 @@ class Vehiculo {
 class Auto extends Vehiculo {
     void acelerar() {
         System.printIln(2);
-        prenderLuces();
     }
 }
 
 class Deportivo extends Auto {
     void acelerar() {
         System.printIln(3);
-        frenar();
     }
 
     void frenar() {
@@ -38,8 +36,8 @@ class TestHerencia {
         var a = new Auto();
         var d = new Deportivo();
 
-        //a.acelerar();
-        //v.frenar();
+        a.acelerar();
+        v.frenar();
         d.acelerar();
     }
 

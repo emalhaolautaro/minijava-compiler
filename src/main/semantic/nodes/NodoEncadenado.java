@@ -14,7 +14,7 @@ import static main.Main.tablaSimbolos;
 
 public class NodoEncadenado {
 
-    private NodoExpresion izquierda;
+    private NodoExpresion expActual;
     private Token id;
     private Tipo tipo;
     private NodoEncadenado encadenado;
@@ -22,16 +22,18 @@ public class NodoEncadenado {
     private Metodo metodoResuelto;
     private Atributo atributoResuelto;
 
+    private boolean retornoReservado = false;
+
     public NodoEncadenado(){}
 
     public NodoEncadenado(NodoExpresion izquierda, Token id) {
-        this.izquierda = izquierda;
+        this.expActual = izquierda;
         this.id = id;
         this.tipo = null; // se asigna durante el chequeo
     }
 
     public NodoExpresion obtenerIzquierda() {
-        return izquierda;
+        return expActual;
     }
 
     public Token obtenerId() {
@@ -54,6 +56,10 @@ public class NodoEncadenado {
         return tipo;
     }
 
+    public void setRetornoReservado(boolean retornoReservado) {
+        this.retornoReservado = retornoReservado;
+    }
+
     public void imprimirAST(int nivel){
         System.out.println("- ".repeat(nivel) + "NodoEncadenado: " + id.obtenerLexema());
         if(encadenado != null){
@@ -71,7 +77,7 @@ public class NodoEncadenado {
 
         Clase claseIzq = tablaSimbolos.obtenerClasePorNombre(((TipoClase) tipoIzquierdo).obtenerNombreClase());
 
-        if (izquierda instanceof NodoAccesoVar) {
+        if (expActual instanceof NodoAccesoVar) {
             if (!claseIzq.existeAtributo(id.obtenerLexema())) {
                 throw new SemanticException(
                         SemanticTwoErrorMessages.VARIABLE_NO_DECLARADA(id));
@@ -80,8 +86,8 @@ public class NodoEncadenado {
             atributoResuelto = claseIzq.obtenerAtributo(id.obtenerLexema());
             tipoActual = claseIzq.obtenerAtributo(id.obtenerLexema()).obtenerTipo();
 
-        } else if (izquierda instanceof NodoLlamadaMetodo) {
-            NodoLlamadaMetodo nodoMetodo = (NodoLlamadaMetodo) izquierda;
+        } else if (expActual instanceof NodoLlamadaMetodo) {
+            NodoLlamadaMetodo nodoMetodo = (NodoLlamadaMetodo) expActual;
 
             if (!claseIzq.existeMetodo(id.obtenerLexema())) {
                 throw new SemanticException(
@@ -115,13 +121,11 @@ public class NodoEncadenado {
             tipoActual = metodo.obtenerTipoRetorno();
 
         } else {
-            throw new SemanticException(SemanticTwoErrorMessages.ENCADENADO_NO_VALIDO(izquierda.obtenerValor()));
+            throw new SemanticException(SemanticTwoErrorMessages.ENCADENADO_NO_VALIDO(expActual.obtenerValor()));
         }
 
-        // Guardar el tipo actual
         this.tipo = tipoActual;
 
-        // Propagar al siguiente encadenado
         if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
             return encadenado.chequear(tipoActual);
         }
@@ -130,39 +134,94 @@ public class NodoEncadenado {
     }
 
     public void generar(OutputManager output, Unidad unidadActual) {
-        if (metodoResuelto != null) {
+        if (expActual instanceof NodoLlamadaMetodo nodoLlamada) {
+
+            List<NodoExpresion> argumentos = nodoLlamada.obtenerArgumentos();
+
+            for (NodoExpresion argumento : argumentos) {
+                argumento.generar(output, unidadActual);
+                output.generar(Instrucciones.SWAP + " ; Poner argumento sobre 'this'");
+            }
+
+            Tipo tipoRet = metodoResuelto.obtenerTipoRetorno();
+            if (!(tipoRet instanceof TipoVoid)) {
+                output.generar(Instrucciones.RMEM + " 1 ; Reservar espacio para valor de retorno");
+                output.generar(Instrucciones.SWAP + " ; Poner ret_val debajo de 'this'");
+            }
+
             if (!metodoResuelto.esStatic()) {
-                output.generar(Instrucciones.DUP + " ; duplicar ref obj");
+                output.generar(Instrucciones.DUP + " ; duplicar ref obj (this)");
                 output.generar(Instrucciones.LOADREF + " 0 ; cargar VT");
-                output.generar(Instrucciones.LOADREF + " " + metodoResuelto.obtenerOffset() + " ; cargar dir metodo " + metodoResuelto.obtenerNombre().obtenerLexema());
+                output.generar(Instrucciones.LOADREF + " " + metodoResuelto.obtenerOffset() + " ; cargar dir metodo");
                 output.generar(Instrucciones.CALL.toString());
             } else {
-                output.generar(Instrucciones.POP + " ; Sacar la referencia al objeto (no se usa)");
+                int numArgs = argumentos.size();
+                for (int i = 0; i < numArgs; i++) {
+                    output.generar(Instrucciones.SWAP + " ; Mover 'this' hacia arriba");
+                }
+                output.generar(Instrucciones.POP + " ; Descartar 'this' de llamada estática");
                 output.generar(Instrucciones.PUSH + " lbl_" + metodoResuelto.obtenerNombre().obtenerLexema() + "@" + metodoResuelto.perteneceAClase().obtenerNombre().obtenerLexema());
                 output.generar(Instrucciones.CALL.toString());
             }
 
-        } else if (atributoResuelto != null) {
-            output.generar(Instrucciones.LOADREF + " " + atributoResuelto.obtenerOffset() + " ; cargar atributo " + atributoResuelto.obtenerNombre().obtenerLexema());
+        } else if (expActual instanceof NodoAccesoVar) {
+            output.generar(Instrucciones.LOADREF + " " + atributoResuelto.obtenerOffset() + " ; cargar atributo " + id.obtenerLexema());
         }
 
         if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            if (metodoResuelto != null && !(metodoResuelto.obtenerTipoRetorno() instanceof TipoVoid)) {
+                encadenado.setRetornoReservado(true);
+            }
             encadenado.generar(output, unidadActual);
         }
     }
 
     public void generarParaAlmacenar(OutputManager output, Unidad unidadActual) {
-        if (!(tipo instanceof TipoClase)) {
-            Clase claseIzq = unidadActual.perteneceAClase();
-            Atributo atributo = claseIzq.obtenerAtributo(id.obtenerLexema());
-            int offset = atributo.obtenerOffset();
 
-            output.generar(Instrucciones.STOREREF + " " + offset + " ; almacenar atributo " + id.obtenerLexema());
-            return;
+        if (encadenado == null || (encadenado instanceof NodoEncadenadoVacio)) {
+
+            if (expActual instanceof NodoAccesoVar) {
+                int offset = atributoResuelto.obtenerOffset();
+                output.generar(Instrucciones.SWAP + " ; Invertir valor y objeto para STOREREF");
+                output.generar(Instrucciones.STOREREF + " " + offset + " ; almacenar atributo " + id.obtenerLexema());
+                return;
+
+            } else {
+                // Error: no se puede asignar a un método (ej. p.metodo() = n)
+                // ('chequear' ya chequea este caso)
+            }
         }
 
-        if (encadenado != null) {
-            encadenado.generarParaAlmacenar(output, unidadActual);
+        // (El encadenado NO es nulo, obtener el siguiente puntero base)
+
+        if (expActual instanceof NodoLlamadaMetodo nodoLlamada) {
+
+            Metodo metodo = this.metodoResuelto;
+            List<NodoExpresion> argumentos = nodoLlamada.obtenerArgumentos();
+
+            for (NodoExpresion argumento : argumentos) {
+                argumento.generar(output, unidadActual);
+                output.generar(Instrucciones.SWAP + " ; Poner argumento sobre 'puntero_base'");
+            }
+            output.generar(Instrucciones.RMEM + " 1 ; Reservar espacio para valor de retorno");
+            output.generar(Instrucciones.SWAP + " ; Poner ret_val debajo de 'puntero_base'");
+
+            if (!metodo.esStatic()) {
+                output.generar(Instrucciones.DUP + " ; duplicar ref obj (this)");
+                output.generar(Instrucciones.LOADREF + " 0 ; cargar VT");
+                output.generar(Instrucciones.LOADREF + " " + metodo.obtenerOffset() + " ; cargar dir metodo");
+                output.generar(Instrucciones.CALL.toString());
+            } else {
+                String etiquetaMetodo = "lbl_" + metodo.obtenerNombre().obtenerLexema() + "@" + metodo.perteneceAClase().obtenerNombre().obtenerLexema();
+                output.generar(Instrucciones.PUSH + " " + etiquetaMetodo);
+                output.generar(Instrucciones.CALL.toString());
+            }
+
+        } else {
+            int offset = atributoResuelto.obtenerOffset();
+            output.generar(Instrucciones.LOADREF + " " + offset + " ; Cargar puntero intermedio " + id.obtenerLexema());
         }
+
+        encadenado.generarParaAlmacenar(output, unidadActual);
     }
 }

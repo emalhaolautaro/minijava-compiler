@@ -101,6 +101,15 @@ public class NodoAsignacion extends NodoExpresion{
             }
 
             return false; // "new B()" solo no es asignable
+        } else if (izquierda instanceof NodoLlamadaMetodoEstatico) {
+            NodoLlamadaMetodoEstatico llamada = (NodoLlamadaMetodoEstatico) izquierda;
+            NodoEncadenado enc = llamada.getEncadenado();
+
+            if (enc != null && !(enc instanceof NodoEncadenadoVacio)) {
+                return esUltimoEncadenadoUnAtributo(enc);
+            }
+
+            return false; // "A.m()" solo no es asignable
         }
 
         return false;
@@ -119,14 +128,20 @@ public class NodoAsignacion extends NodoExpresion{
         derecha.generar(output, unidadActual);
 
         if (izquierda instanceof NodoAccesoVar var) {
-            var.generarParaAlmacenar(output);
+            var.generarParaAlmacenar(output, unidadActual);
         }
-        if(izquierda instanceof NodoThis var){
-            var.generarParaAlmacenar(output);
+        if (izquierda instanceof NodoThis var){
+            var.generarParaAlmacenar(output, unidadActual);
         }
-
-        if(derecha instanceof NodoLlamadaConstructor)
-            output.generar(Instrucciones.FMEM + " 1" + " ; Liberar slot temporal del 'new'");
+        if (izquierda instanceof NodoLlamadaMetodo var) {
+            var.generarParaAlmacenar(output, unidadActual);
+        }
+        if (izquierda instanceof NodoLlamadaConstructor var) {
+            var.generarParaAlmacenar(output, unidadActual);
+        }
+        if (izquierda instanceof NodoLlamadaMetodoEstatico var){
+            var.generarParaAlmacenar(output, unidadActual);
+        }
     }
 
     @Override

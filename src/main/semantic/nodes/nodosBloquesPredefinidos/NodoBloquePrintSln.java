@@ -23,10 +23,6 @@ public class NodoBloquePrintSln extends NodoBloque {
     @Override
     public void generar(OutputManager output, Unidad unidadActual){
         output.generar(Instrucciones.LOAD + " 3" + " ; Cargar parámetro 's' (puntero al CIR)");
-
-        output.generar(Instrucciones.PUSH + " 1" + " ; Apilar offset de los datos del string");
-        output.generar(Instrucciones.ADD + " ; Calcular Puntero_CIR + 1");
-
         output.generar(Instrucciones.SPRINT + " ; Imprimir el string");
         output.generar(Instrucciones.PRNLN.toString());
         //TODO: Corregir manejo de strings

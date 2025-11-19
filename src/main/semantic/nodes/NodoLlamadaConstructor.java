@@ -10,6 +10,7 @@ import main.semantic.symboltable.Unidad;
 import main.utils.Instrucciones;
 import main.utils.Token;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,12 +52,17 @@ public class NodoLlamadaConstructor extends NodoExpresion{
 
     @Override
     public Tipo chequear() {
-        Clase clase = tablaSimbolos.obtenerClasePorNombre(this.obtenerValor().obtenerLexema());
-        claseResuelta = clase;
-
         if (!tablaSimbolos.existeClase(this.obtenerValor().obtenerLexema())) {
             throw new SemanticException(
                     SemanticTwoErrorMessages.CLASE_NO_DECLARADA(obtenerValor()));
+        }
+
+        Clase clase = tablaSimbolos.obtenerClasePorNombre(this.obtenerValor().obtenerLexema());
+        claseResuelta = clase;
+
+        List<Tipo> tiposArgumentos = new ArrayList<>();
+        for (NodoExpresion arg : argumentos) {
+            tiposArgumentos.add(arg.chequear()); // Llama a chequear() en NodoLiteralString, etc.
         }
 
         boolean encontrado = false;
@@ -125,5 +131,42 @@ public class NodoLlamadaConstructor extends NodoExpresion{
 
         output.generar(Instrucciones.PUSH + " " + l_constr);
         output.generar(Instrucciones.CALL.toString());
+
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            encadenado.generarParaAlmacenar(output, unidadActual);
+        }
+    }
+
+    public void generarParaAlmacenar(OutputManager output, Unidad unidadActual) {
+        int k_size = 1 + claseResuelta.obtenerAtributos().size();
+
+        String l_malloc = "simple_malloc";
+        String l_VT = "VT@" + claseResuelta.obtenerNombre().obtenerLexema();
+        String l_constr = "lbl_builder@" + claseResuelta.obtenerNombre().obtenerLexema();
+
+        output.generar(Instrucciones.RMEM + " 1" + " ; Reservar espacio para el puntero 'new'");
+
+        output.generar(Instrucciones.PUSH + " " + k_size + " ; Apilar tamaño del CIR (k)");
+        output.generar(Instrucciones.PUSH + " " + l_malloc);
+        output.generar(Instrucciones.CALL.toString());
+
+        output.generar(Instrucciones.DUP.toString());
+
+        output.generar(Instrucciones.PUSH + " " + l_VT);
+        output.generar(Instrucciones.STOREREF + " 0" + " ; Guardar puntero a la VT en offset 0");
+
+        output.generar(Instrucciones.DUP.toString());
+
+        for(NodoExpresion arg : argumentos) {
+            arg.generar(output, unidadActual);
+            output.generar(Instrucciones.SWAP + " ; Mover 'this' debajo del argumento");
+        }
+
+        output.generar(Instrucciones.PUSH + " " + l_constr);
+        output.generar(Instrucciones.CALL.toString());
+
+        if (encadenado != null && !(encadenado instanceof NodoEncadenadoVacio)) {
+            encadenado.generarParaAlmacenar(output, unidadActual);
+        }
     }
 }

@@ -35,6 +35,7 @@ STORE 3
 lbl_end_read@System: NOP
 STOREFP
 RET 0
+ 
 lbl_printB@System: LOADFP
 LOADSP
 STOREFP
@@ -43,6 +44,7 @@ BPRINT
 lbl_end_printB@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printC@System: LOADFP
 LOADSP
 STOREFP
@@ -51,6 +53,7 @@ CPRINT
 lbl_end_printC@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printI@System: LOADFP
 LOADSP
 STOREFP
@@ -59,16 +62,16 @@ IPRINT
 lbl_end_printI@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printS@System: LOADFP
 LOADSP
 STOREFP
 LOAD 3 ; Cargar parámetro 's' (puntero al CIR)
-PUSH 1 ; Apilar offset de los datos del string
-ADD ; Calcular Puntero_CIR + 1
 SPRINT ; Imprimir el string
 lbl_end_printS@System: NOP
 STOREFP
 RET 1
+ 
 lbl_println@System: LOADFP
 LOADSP
 STOREFP
@@ -76,6 +79,7 @@ PRNLN
 lbl_end_println@System: NOP
 STOREFP
 RET 0
+ 
 lbl_printBln@System: LOADFP
 LOADSP
 STOREFP
@@ -85,6 +89,7 @@ PRNLN
 lbl_end_printBln@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printCln@System: LOADFP
 LOADSP
 STOREFP
@@ -94,6 +99,7 @@ PRNLN
 lbl_end_printCln@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printIln@System: LOADFP
 LOADSP
 STOREFP
@@ -103,17 +109,17 @@ PRNLN
 lbl_end_printIln@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printSln@System: LOADFP
 LOADSP
 STOREFP
 LOAD 3 ; Cargar parámetro 's' (puntero al CIR)
-PUSH 1 ; Apilar offset de los datos del string
-ADD ; Calcular Puntero_CIR + 1
 SPRINT ; Imprimir el string
 PRNLN
 lbl_end_printSln@System: NOP
 STOREFP
 RET 1
+ 
 lbl_debugPrint@System: LOADFP
 LOADSP
 STOREFP
@@ -122,32 +128,7 @@ IPRINT
 lbl_end_debugPrint@System: NOP
 STOREFP
 RET 1
-
-.DATA
-VT@Object: NOP
-
-.CODE
-lbl_debugPrint@Object: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@Object: NOP
-STOREFP
-RET 1
-
-.DATA
-VT@String: NOP
-
-.CODE
-lbl_debugPrint@String: LOADFP
-LOADSP
-STOREFP
-LOAD 3
-IPRINT
-lbl_end_debugPrint@String: NOP
-STOREFP
-RET 1
+ 
 
 .DATA
 VT@Init: NOP
@@ -164,7 +145,7 @@ STOREFP
 PUSH 1
 PUSH lbl_printBln@System
 CALL
-PUSH'A'
+PUSH 'A'
 PUSH lbl_printCln@System
 CALL
 PUSH lbl_println@System
@@ -175,4 +156,33 @@ CALL
 lbl_end_main@Init: NOP
 STOREFP
 RET 0
+ 
+
+.DATA
+VT@Object: NOP
+
+.CODE
+lbl_debugPrint@Object: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@Object: NOP
+STOREFP
+RET 1
+ 
+
+.DATA
+VT@String: NOP
+
+.CODE
+lbl_debugPrint@String: LOADFP
+LOADSP
+STOREFP
+LOAD 3
+IPRINT
+lbl_end_debugPrint@String: NOP
+STOREFP
+RET 1
+ 
 

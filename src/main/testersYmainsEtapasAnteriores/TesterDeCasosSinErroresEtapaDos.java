@@ -1,30 +1,31 @@
-package main;
+package main.testersYmainsEtapasAnteriores;
+
+import main.Main;
+import org.hamcrest.CoreMatchers;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 
 
 @RunWith(Parameterized.class)
-public class TesterDeCasosSinErroresClasico {
+public class TesterDeCasosSinErroresEtapaDos {
 
     private static final String msgExito = "[SinErrores]";
-    private static final String testFilesDirectoryPath = "etapa 4 - semantico pt.2/sinErrores/";
+    private static final String testFilesDirectoryPath = "etapa 2 - sintactico/sinErrores/";
 
     //TODO: el tipo de esta variable init tiene que ser la clase que tiene el main
-    private static final Main init = null;
-   
+    private static final MainSintactico init = null;
+
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
     private boolean fullCompilerOuputPrintingInEachTest = true;
@@ -34,12 +35,12 @@ public class TesterDeCasosSinErroresClasico {
     public  void setUpClass() {
         System.setOut(new PrintStream(outContent));
     }
-    
+
     @After
     public  void tearDownClass() {
         System.setOut(originalOut);
     }
-    
+
     @Parameters(name = "{0}")
     public static Iterable<? extends Object> data() {
         File folder = new File(testFilesDirectoryPath);
@@ -49,12 +50,12 @@ public class TesterDeCasosSinErroresClasico {
         }
         names.sort(String::compareTo);
         return names;
-        
+
     }
-    
+
     private String input;
-    
-    public TesterDeCasosSinErroresClasico(String input){
+
+    public TesterDeCasosSinErroresEtapaDos(String input){
         this.input = input;
     }
 

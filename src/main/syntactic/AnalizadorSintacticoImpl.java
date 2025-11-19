@@ -750,12 +750,12 @@ public class AnalizadorSintacticoImpl implements AnalizadorSintactico{
             NodoExpresion expAtributo = expresion();
             match("PuntoYComa");
 
-            NodoAtributo atributo = new NodoAtributo(nombre, tipoAM, expAtributo);
+            NodoAtributo atributo = new NodoAtributo(nuevoAtributo, expAtributo);
             ts.obtenerClaseActual().agregarAtributo(nuevoAtributo, atributo);
 
         } else if(tipo.equals("PuntoYComa")){ // Atributo sin inicialización
             Atributo nuevoAtributo = new Atributo(nombre, tipoAM, null);
-            NodoAtributo atributo = new NodoAtributo(nombre, tipoAM, new NodoExpresionVacia());
+            NodoAtributo atributo = new NodoAtributo(nuevoAtributo, new NodoExpresionVacia());
             ts.obtenerClaseActual().agregarAtributo(nuevoAtributo, atributo);
 
 

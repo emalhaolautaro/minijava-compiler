@@ -25,6 +25,6 @@ public class NodoLiteralChar extends NodoExpresion{
 
     @Override
     public void generar(OutputManager output, Unidad unidadActual) {
-        output.generar(Instrucciones.PUSH + obtenerValor().obtenerLexema());
+        output.generar(Instrucciones.PUSH + " " +obtenerValor().obtenerLexema());
     }
 }

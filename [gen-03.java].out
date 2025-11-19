@@ -45,16 +45,20 @@ DUP
 PUSH lbl_builder@A
 CALL
 STORE 0 ; Guardar variable local x
-FMEM 1 ; Liberar slot temporal del 'new'
 LOAD 0 ; Cargar variable local x
-DUP ; duplicar ref obj
+RMEM 1 ; Reservar espacio para valor de retorno
+SWAP ; Poner ret_val debajo de 'this'
+DUP ; duplicar ref obj (this)
 LOADREF 0 ; cargar VT
-LOADREF 1 ; cargar dir metodo m2
+LOADREF 1 ; cargar dir metodo
 CALL
+POP
 LOAD 0 ; Cargar variable local x
-DUP ; duplicar ref obj
+RMEM 1 ; Reservar espacio para valor de retorno
+SWAP ; Poner ret_val debajo de 'this'
+DUP ; duplicar ref obj (this)
 LOADREF 0 ; cargar VT
-LOADREF 1 ; cargar dir metodo m2
+LOADREF 1 ; cargar dir metodo
 CALL
 PUSH lbl_debugPrint@Object
 CALL
@@ -62,6 +66,7 @@ lbl_end_main@Init: NOP
 FMEM 1 ; Liberar celdas locales
 STOREFP
 RET 0
+ 
 
 .DATA
 VT@String: NOP
@@ -75,6 +80,7 @@ IPRINT
 lbl_end_debugPrint@String: NOP
 STOREFP
 RET 1
+ 
 
 .DATA
 VT@System: NOP
@@ -90,6 +96,7 @@ STORE 3
 lbl_end_read@System: NOP
 STOREFP
 RET 0
+ 
 lbl_printB@System: LOADFP
 LOADSP
 STOREFP
@@ -98,6 +105,7 @@ BPRINT
 lbl_end_printB@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printC@System: LOADFP
 LOADSP
 STOREFP
@@ -106,6 +114,7 @@ CPRINT
 lbl_end_printC@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printI@System: LOADFP
 LOADSP
 STOREFP
@@ -114,16 +123,16 @@ IPRINT
 lbl_end_printI@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printS@System: LOADFP
 LOADSP
 STOREFP
 LOAD 3 ; Cargar parámetro 's' (puntero al CIR)
-PUSH 1 ; Apilar offset de los datos del string
-ADD ; Calcular Puntero_CIR + 1
 SPRINT ; Imprimir el string
 lbl_end_printS@System: NOP
 STOREFP
 RET 1
+ 
 lbl_println@System: LOADFP
 LOADSP
 STOREFP
@@ -131,6 +140,7 @@ PRNLN
 lbl_end_println@System: NOP
 STOREFP
 RET 0
+ 
 lbl_printBln@System: LOADFP
 LOADSP
 STOREFP
@@ -140,6 +150,7 @@ PRNLN
 lbl_end_printBln@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printCln@System: LOADFP
 LOADSP
 STOREFP
@@ -149,6 +160,7 @@ PRNLN
 lbl_end_printCln@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printIln@System: LOADFP
 LOADSP
 STOREFP
@@ -158,17 +170,17 @@ PRNLN
 lbl_end_printIln@System: NOP
 STOREFP
 RET 1
+ 
 lbl_printSln@System: LOADFP
 LOADSP
 STOREFP
 LOAD 3 ; Cargar parámetro 's' (puntero al CIR)
-PUSH 1 ; Apilar offset de los datos del string
-ADD ; Calcular Puntero_CIR + 1
 SPRINT ; Imprimir el string
 PRNLN
 lbl_end_printSln@System: NOP
 STOREFP
 RET 1
+ 
 lbl_debugPrint@System: LOADFP
 LOADSP
 STOREFP
@@ -177,6 +189,7 @@ IPRINT
 lbl_end_debugPrint@System: NOP
 STOREFP
 RET 1
+ 
 
 .DATA
 VT@A: DW lbl_m1@A
@@ -196,16 +209,19 @@ PUSH lbl_debugPrint@Object
 CALL
 lbl_end_m1@A: NOP
 STOREFP
-RET 1
+RET 2
+ 
 lbl_m2@A: LOADFP
 LOADSP
 STOREFP
 PUSH 33
-STORE 3 ; Guardar valor de retorno en M[fp+3]
-JUMP lbl_end_m2@A ; salto al final del método tras return
+STORE 4 ; Guardar valor de retorno en M[fp+4]
+STOREFP
+RET 1
 lbl_end_m2@A: NOP
 STOREFP
-RET 0
+RET 1
+ 
 
 .DATA
 VT@Object: NOP
@@ -219,4 +235,5 @@ IPRINT
 lbl_end_debugPrint@Object: NOP
 STOREFP
 RET 1
+ 
 

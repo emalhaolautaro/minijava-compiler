@@ -9,11 +9,7 @@ import main.semantic.nodes.NodoVarLocal;
 import main.utils.ElementoConOffset;
 import main.utils.Token;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public abstract class Unidad extends Elemento implements ElementoConOffset {
     private List<Parametro> parametros;
@@ -146,9 +142,15 @@ public abstract class Unidad extends Elemento implements ElementoConOffset {
     public void calcularOffsetsParametros() {
         int offset = esStatic() ? 3 : 4;
 
+        List<Parametro> parametros = obtenerParametros();
+        Collections.reverse(parametros);
+
+
         for (Parametro p : obtenerParametros()) {
             p.setOffset(offset++);
         }
+
+        Collections.reverse(parametros);
     }
 
     public abstract boolean esStatic();

@@ -70,8 +70,5 @@ public class NodoVarLocal extends NodoSentencia{
     public void generar(OutputManager output, Unidad unidadActual) {
         expresionAsignada.generar(output, unidadActual);
         output.generar("STORE " + (Offset) + " ; Guardar variable local " + var.obtenerLexema());
-        if (expresionAsignada instanceof NodoLlamadaConstructor) {
-            output.generar(Instrucciones.FMEM + " 1" + " ; Liberar slot temporal del 'new'");
-        }
     }
 }
